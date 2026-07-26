@@ -15,7 +15,7 @@ export const memberSchema = z.object({
 
   loan_amount: z.coerce.number().min(1, 'Loan amount is required'),
   loan_date: z.string().min(1, 'Loan date is required'),
-  interest_type: z.enum(['Flat', 'Reducing']).default('Flat'),
+  interest_type: z.enum(['Flat']).default('Flat'),
   interest_rate: z.coerce.number().default(0),
   file_charge: z.coerce.number().default(0),
   benefit_amount: z.coerce.number().default(0),

@@ -71,6 +71,21 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
 
   const onSubmit = async (data: UpdateFormValues) => {
     if (!editingInst) return
+
+    const expected = Number(editingInst.installment_amount) + Number(data.penalty_amount || 0)
+    const paid = Number(data.amount_paid || 0)
+    const outstanding = expected - paid
+
+    if (data.status === 'Paid' && outstanding > 0) {
+      toast.error('Cannot mark as Paid. Outstanding amount must be 0.')
+      return
+    }
+    
+    // Auto-correct to Paid if they paid in full but didn't change the status
+    if (outstanding <= 0 && data.status !== 'Paid') {
+      data.status = 'Paid'
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -91,8 +106,24 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
 
       if (error) throw error
 
-      setInstallments(installments.map(i => i.id === updated.id ? updated : i))
-      toast.success('Installment updated successfully')
+      const updatedList = installments.map(i => i.id === updated.id ? updated : i)
+      setInstallments(updatedList)
+      
+      const allPaid = updatedList.every(i => i.status === 'Paid')
+      if (allPaid) {
+        const { error: memberError } = await supabase
+          .from('members')
+          .update({ status: 'Closed' })
+          .eq('id', memberId)
+          
+        if (memberError) {
+          toast.error('Failed to auto-close member: ' + memberError.message)
+        } else {
+          toast.success('All installments paid! Member marked as Closed.')
+        }
+      } else {
+        toast.success('Installment updated successfully')
+      }
       setEditingInst(null)
       router.refresh()
     } catch (error: any) {

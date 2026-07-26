@@ -10,7 +10,7 @@ import { Button } from '@/src/components/ui/Button'
 import { memberSchema, type MemberFormValues } from './schema'
 import { createClient } from '@/src/lib/supabase/client'
 import { uploadFinanceDocument } from '@/src/lib/storage'
-import { generateInstallments } from '@/src/helpers/dateHelpers'
+import { generateInstallments, calculateEndDate } from '@/src/helpers/dateHelpers'
 import { calculateTotalRepayment, calculateTotalInstallmentsCount } from '@/src/helpers/financeMath'
 
 import { PersonalInfoSection } from './form-sections/PersonalInfoSection'
@@ -23,6 +23,7 @@ import { DocumentUploadSection } from './form-sections/DocumentUploadSection'
 export function MemberForm({ initialData }: { initialData?: any }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [calcMode, setCalcMode] = useState<'amount' | 'installments'>('amount')
   const supabase = createClient()
 
   const {
@@ -56,7 +57,6 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       total_family_members: initialData?.total_family_members || 0,
       file_charge: initialData?.file_charge || 0,
       interest_rate: initialData?.interest_rate || 0,
-      interest_type: initialData?.interest_type || 'Flat',
       benefit_amount: initialData?.benefit_amount || 0,
       installment_type: initialData?.installment_type || 'Daily',
       total_installments: initialData?.total_installments || 100,
@@ -79,18 +79,39 @@ export function MemberForm({ initialData }: { initialData?: any }) {
   const watchLoanAmount = watch('loan_amount')
   const watchInterestRate = watch('interest_rate')
   const watchInstallmentAmount = watch('installment_amount')
+  const watchInstallmentStartDate = watch('installment_start_date')
+  const watchInstallmentType = watch('installment_type')
+  const watchTotalInstallments = watch('total_installments')
 
   useEffect(() => {
     const loan = Number(watchLoanAmount) || 0
     const rate = Number(watchInterestRate) || 0
     const instAmt = Number(watchInstallmentAmount) || 0
+    const totalInst = Number(watchTotalInstallments) || 0
 
-    if (loan > 0 && instAmt > 0) {
+    if (loan > 0) {
       const totalRepayment = calculateTotalRepayment(loan, rate)
-      const totalInst = calculateTotalInstallmentsCount(totalRepayment, instAmt)
-      setValue('total_installments', totalInst, { shouldValidate: true })
+      
+      if (calcMode === 'amount' && instAmt > 0) {
+        const calculatedInst = calculateTotalInstallmentsCount(totalRepayment, instAmt)
+        if (calculatedInst !== totalInst) {
+          setValue('total_installments', calculatedInst, { shouldValidate: true })
+        }
+      } else if (calcMode === 'installments' && totalInst > 0) {
+        const calculatedAmt = Math.ceil(totalRepayment / totalInst)
+        if (calculatedAmt !== instAmt) {
+          setValue('installment_amount', calculatedAmt, { shouldValidate: true })
+        }
+      }
     }
-  }, [watchLoanAmount, watchInterestRate, watchInstallmentAmount, setValue])
+  }, [watchLoanAmount, watchInterestRate, watchInstallmentAmount, watchTotalInstallments, calcMode, setValue])
+
+  useEffect(() => {
+    if (watchInstallmentStartDate && watchTotalInstallments > 0) {
+      const endDate = calculateEndDate(watchInstallmentStartDate, watchTotalInstallments, watchInstallmentType as any)
+      setValue('installment_end_date', endDate, { shouldValidate: true })
+    }
+  }, [watchInstallmentStartDate, watchTotalInstallments, watchInstallmentType, setValue])
 
   const onSubmit = async (data: MemberFormValues) => {
     setIsSubmitting(true)
@@ -113,7 +134,6 @@ export function MemberForm({ initialData }: { initialData?: any }) {
 
         loan_amount: data.loan_amount,
         loan_date: data.loan_date,
-        interest_type: data.interest_type,
         interest_rate: data.interest_rate,
         file_charge: data.file_charge,
         benefit_amount: data.benefit_amount,
@@ -181,11 +201,14 @@ export function MemberForm({ initialData }: { initialData?: any }) {
 
       // Generate Installments only if it's a new member
       if (!initialData?.id) {
+        const totalExpectedRepayment = calculateTotalRepayment(data.loan_amount, data.interest_rate)
+
         const installmentsToInsert = generateInstallments(
           data.installment_start_date,
           data.total_installments,
           data.installment_type,
-          data.installment_amount
+          data.installment_amount,
+          totalExpectedRepayment
         ).map(inst => ({
           member_id: member.id,
           installment_no: inst.installment_no,
@@ -242,7 +265,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         removeFamily={removeFamily}
       />
 
-      <FinancialDetailsSection register={register} errors={errors} />
+      <FinancialDetailsSection register={register} errors={errors} setCalcMode={setCalcMode} />
 
       <GuarantorDetailsSection register={register} errors={errors} />
 

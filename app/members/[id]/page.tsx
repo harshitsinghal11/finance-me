@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
 import { DeleteMemberButton } from '@/src/components/members/DeleteMemberButton'
-import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalance } from '@/src/helpers/financeMath'
+import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalance, calculateTotalRepayment } from '@/src/helpers/financeMath'
 
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -31,7 +31,8 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
 
   const totalPaid = calculateTotalPaid(installments || [])
   const totalPenalties = calculateTotalPenalties(installments || [])
-  const outstandingBalance = calculateOutstandingBalance(member.loan_amount, totalPaid, totalPenalties)
+  const totalExpected = calculateTotalRepayment(member.loan_amount, member.interest_rate)
+  const outstandingBalance = calculateOutstandingBalance(totalExpected, totalPaid, totalPenalties)
 
   const { data: family } = await supabase
     .from('member_family')

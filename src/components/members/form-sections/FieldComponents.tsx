@@ -10,9 +10,10 @@ interface InputFieldProps {
   allowNumbers?: boolean
   register: UseFormRegister<MemberFormValues>
   errors: FieldErrors<MemberFormValues>
+  onFocus?: () => void
 }
 
-export const InputField = ({ label, name, type = 'text', readOnly = false, maxLength, allowNumbers = true, register, errors }: InputFieldProps) => (
+export const InputField = ({ label, name, type = 'text', readOnly = false, maxLength, allowNumbers = true, register, errors, onFocus }: InputFieldProps) => (
   <div>
     <label className="block text-sm font-medium text-text mb-1">{label}</label>
     <input
@@ -20,6 +21,7 @@ export const InputField = ({ label, name, type = 'text', readOnly = false, maxLe
       readOnly={readOnly}
       maxLength={maxLength}
       {...register(name)}
+      onFocus={onFocus}
       onInput={(e) => {
         if (type === 'tel') {
           e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '')

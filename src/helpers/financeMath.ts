@@ -23,12 +23,12 @@ export function calculateTotalPenalties(installments: any[] = []): number {
 // ==========================================
 
 export function calculateOutstandingBalance(
-  loanAmount: number | string,
+  totalExpectedRepayment: number | string,
   totalPaid: number,
   totalPenalties: number = 0
 ): number {
-  const principal = Number(loanAmount) || 0;
-  const balance = principal - totalPaid + totalPenalties;
+  const total = Number(totalExpectedRepayment) || 0;
+  const balance = total - totalPaid + totalPenalties;
   // Outstanding balance shouldn't be negative, though in some extreme overpayment cases it might be.
   // Standardizing to return at least 0.
   return Math.max(0, balance);
@@ -40,10 +40,12 @@ export function calculateOutstandingBalance(
 
 export function calculateTotalActiveLoans(activeMembers: any[] = []): number {
   if (!activeMembers || activeMembers.length === 0) return 0;
-  return activeMembers.reduce((sum, member) => sum + Number(member.loan_amount || 0), 0);
+  return activeMembers.reduce((sum, member) => {
+    return sum + calculateTotalRepayment(member.loan_amount, member.interest_rate);
+  }, 0);
 }
 
-export function calculateMonthlyRevenue(installments: any[] = [], monthIndex: number, year: number): number {
+export function calculateMonthlyNetProfit(installments: any[] = [], monthIndex: number, year: number): number {
   if (!installments || installments.length === 0) return 0;
   
   return installments
@@ -52,7 +54,27 @@ export function calculateMonthlyRevenue(installments: any[] = [], monthIndex: nu
       const paymentDate = new Date(inst.received_date);
       return paymentDate.getMonth() === monthIndex && paymentDate.getFullYear() === year;
     })
-    .reduce((sum, inst) => sum + Number(inst.amount_paid || 0), 0);
+    .reduce((sum, inst) => {
+      const amountPaid = Number(inst.amount_paid || 0);
+      if (amountPaid === 0) return sum;
+
+      const penalty = Number(inst.penalty_amount || 0);
+      const member = Array.isArray(inst.members) ? inst.members[0] : inst.members;
+      
+      if (!member || !member.loan_amount) return sum;
+
+      const loanAmount = Number(member.loan_amount || 0);
+      const interestRate = Number(member.interest_rate || 0);
+      const expectedRepayment = calculateTotalRepayment(loanAmount, interestRate);
+      
+      const totalInterest = expectedRepayment - loanAmount;
+      const interestRatio = expectedRepayment > 0 ? (totalInterest / expectedRepayment) : 0;
+      
+      const basePayment = Math.max(0, amountPaid - penalty);
+      const profitFromBase = basePayment * interestRatio;
+      
+      return sum + profitFromBase + penalty;
+    }, 0);
 }
 
 // ==========================================

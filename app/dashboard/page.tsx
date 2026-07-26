@@ -1,10 +1,16 @@
 import { createClient } from '@/src/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { calculateTotalActiveLoans, calculateTotalPaid, calculateMonthlyRevenue } from '@/src/helpers/financeMath'
+import { 
+  calculateTotalPaid, 
+  calculateTotalActiveLoans, 
+  calculateMonthlyNetProfit 
+} from '@/src/helpers/financeMath'
 import { AnimatedPage } from '@/src/components/ui/AnimatedPage'
 import { SearchBar } from '@/src/components/ui/SearchBar'
 import { MembersTable } from '@/src/components/members/MembersTable'
+import { DueTodayWidget } from '@/src/components/dashboard/DueTodayWidget'
+import { RecentMembersWidget } from '@/src/components/dashboard/RecentMembersWidget'
 import { Plus, UsersRound } from 'lucide-react'
 
 export default async function DashboardPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
@@ -12,7 +18,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   const query = typeof searchParams?.query === 'string' ? searchParams.query : ''
   const status = typeof searchParams?.status === 'string' ? searchParams.status : ''
   const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : ''
-  
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -40,7 +46,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const { data: activeMembers } = await supabase
     .from('members')
-    .select('loan_amount')
+    .select('loan_amount, interest_rate')
     .eq('profile_id', user.id)
     .eq('status', 'Active')
     .eq('is_deleted', false)
@@ -57,7 +63,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   // Fetch installments to calculate outstanding and revenue
   const { data: installments } = await supabase
     .from('member_installments')
-    .select('amount_paid, received_date, members!inner(profile_id, status, is_deleted)')
+    .select('amount_paid, penalty_amount, received_date, members!inner(profile_id, status, is_deleted, loan_amount, interest_rate)')
     .eq('members.profile_id', user.id)
     .eq('members.status', 'Active')
     .eq('members.is_deleted', false)
@@ -68,12 +74,12 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
-  const revenueThisMonth = calculateMonthlyRevenue(installments || [], currentMonth, currentYear)
+  const netProfitThisMonth = calculateMonthlyNetProfit(installments || [], currentMonth, currentYear)
 
   // Fetch search results if any filters/queries are active
   const isSearching = query !== '' || status !== '' || sort !== ''
   let searchResults: any[] = []
-  
+
   if (isSearching) {
     let supaQuery = supabase
       .from('members')
@@ -96,7 +102,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     } else {
       supaQuery = supaQuery.order('created_at', { ascending: false })
     }
-    
+
     // Only fetch first 10 for dashboard preview
     supaQuery = supaQuery.range(0, 9)
 
@@ -137,7 +143,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           { label: 'Active Members', value: activeMembersCount?.toString() || '0' },
           { label: 'Total Outstanding', value: `₹${Math.max(0, totalOutstanding).toLocaleString()}` },
           { label: 'Defaulted Members', value: defaultedMembersCount?.toString() || '0' },
-          { label: 'Revenue This Month', value: `₹${revenueThisMonth.toLocaleString()}` },
+          { label: 'Net Profit This Month', value: `₹${netProfitThisMonth.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
         ].map((metric) => (
           <div key={metric.label} className="bg-surface rounded-lg border border-border p-6 shadow-sm">
             <div className="flex items-center gap-4">
@@ -154,6 +160,17 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-text mb-4">Search Results</h2>
           <MembersTable members={searchResults} totalPages={1} currentPage={1} />
+        </div>
+      )}
+
+      {!isSearching && (
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <div className="h-full">
+            <DueTodayWidget />
+          </div>
+          <div className="h-full">
+            <RecentMembersWidget />
+          </div>
         </div>
       )}
 
