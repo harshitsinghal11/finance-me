@@ -37,33 +37,36 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     redirect('/setup')
   }
 
-  // Fetch Dashboard Metrics
-  const { count: activeMembersCount } = await supabase
-    .from('members')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', user.id)
-    .eq('status', 'Active')
-    .eq('is_deleted', false)
-
-  const { data: activeMembers } = await supabase
-    .from('members')
-    .select('loan_amount, interest_rate')
-    .eq('profile_id', user.id)
-    .eq('status', 'Active')
-    .eq('is_deleted', false)
+  // Run independent dashboard queries in parallel
+  const [
+    { count: activeMembersCount },
+    { data: activeMembers },
+    { data: installments }
+  ] = await Promise.all([
+    supabase
+      .from('members')
+      .select('*', { count: 'exact', head: true })
+      .eq('profile_id', user.id)
+      .eq('status', 'Active')
+      .eq('is_deleted', false),
+    
+    supabase
+      .from('members')
+      .select('loan_amount, interest_rate')
+      .eq('profile_id', user.id)
+      .eq('status', 'Active')
+      .eq('is_deleted', false),
+      
+    supabase
+      .from('member_installments')
+      .select('amount_paid, penalty_amount, received_date, members!inner(profile_id, status, is_deleted, loan_amount, interest_rate)')
+      .eq('members.profile_id', user.id)
+      .eq('members.status', 'Active')
+      .eq('members.is_deleted', false)
+      .eq('is_deleted', false)
+  ])
 
   const totalActiveLoans = calculateTotalActiveLoans(activeMembers || [])
-
-  // (Removed Defaulted Members fetch)
-  // Fetch installments to calculate outstanding and revenue
-  const { data: installments } = await supabase
-    .from('member_installments')
-    .select('amount_paid, penalty_amount, received_date, members!inner(profile_id, status, is_deleted, loan_amount, interest_rate)')
-    .eq('members.profile_id', user.id)
-    .eq('members.status', 'Active')
-    .eq('members.is_deleted', false)
-    .eq('is_deleted', false)
-
   const totalPaid = calculateTotalPaid(installments || [])
   const totalOutstanding = totalActiveLoans - totalPaid
 

@@ -8,12 +8,24 @@
 // 1. Basic Summation Helpers
 // ==========================================
 
-export function calculateTotalPaid(installments: any[] = []): number {
+export interface ActiveMember {
+  loan_amount: string | number;
+  interest_rate: string | number;
+}
+
+export interface MemberInstallment {
+  amount_paid?: string | number | null;
+  penalty_amount?: string | number | null;
+  received_date?: string | null;
+  members?: ActiveMember | ActiveMember[];
+}
+
+export function calculateTotalPaid(installments: MemberInstallment[] = []): number {
   if (!installments || installments.length === 0) return 0;
   return installments.reduce((sum, inst) => sum + Number(inst.amount_paid || 0), 0);
 }
 
-export function calculateTotalPenalties(installments: any[] = []): number {
+export function calculateTotalPenalties(installments: MemberInstallment[] = []): number {
   if (!installments || installments.length === 0) return 0;
   return installments.reduce((sum, inst) => sum + Number(inst.penalty_amount || 0), 0);
 }
@@ -38,14 +50,14 @@ export function calculateOutstandingBalance(
 // 3. Dashboard Metrics
 // ==========================================
 
-export function calculateTotalActiveLoans(activeMembers: any[] = []): number {
+export function calculateTotalActiveLoans(activeMembers: ActiveMember[] = []): number {
   if (!activeMembers || activeMembers.length === 0) return 0;
   return activeMembers.reduce((sum, member) => {
     return sum + calculateTotalRepayment(member.loan_amount, member.interest_rate);
   }, 0);
 }
 
-export function calculateDailyCashCollected(installments: any[] = [], date: Date): number {
+export function calculateDailyCashCollected(installments: MemberInstallment[] = [], date: Date): number {
   if (!installments || installments.length === 0) return 0;
   
   return installments
@@ -61,7 +73,7 @@ export function calculateDailyCashCollected(installments: any[] = [], date: Date
     .reduce((sum, inst) => sum + Number(inst.amount_paid || 0), 0);
 }
 
-export function calculateMonthlyNetProfit(installments: any[] = [], monthIndex: number, year: number): number {
+export function calculateMonthlyNetProfit(installments: MemberInstallment[] = [], monthIndex: number, year: number): number {
   if (!installments || installments.length === 0) return 0;
   
   return installments

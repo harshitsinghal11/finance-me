@@ -80,7 +80,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
       toast.error('Cannot mark as Paid. Outstanding amount must be 0.')
       return
     }
-    
+
     // Auto-correct to Paid if they paid in full but didn't change the status
     if (outstanding <= 0 && data.status !== 'Paid') {
       data.status = 'Paid'
@@ -108,14 +108,14 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
 
       const updatedList = installments.map(i => i.id === updated.id ? updated : i)
       setInstallments(updatedList)
-      
+
       const allPaid = updatedList.every(i => i.status === 'Paid')
       if (allPaid) {
         const { error: memberError } = await supabase
           .from('members')
           .update({ status: 'Closed' })
           .eq('id', memberId)
-          
+
         if (memberError) {
           toast.error('Failed to auto-close member: ' + memberError.message)
         } else {
@@ -166,13 +166,13 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border
-      ${inst.status === "Active"
+                      ${inst.status === "Paid"
                         ? "bg-green-50 text-green-700 border-green-200"
-                        : inst.status === "Closed"
-                          ? "bg-slate-100 text-slate-700 border-slate-200"
-                          : inst.status === "Defaulted"
-                            ? "bg-red-50 text-red-700 border-red-200"
-                            : "bg-gray-100 text-gray-700 border-gray-200"
+                        : inst.status === "Late"
+                          ? "bg-red-50 text-red-700 border-red-200"
+                          : inst.status === "Partial"
+                            ? "bg-orange-50 text-orange-700 border-orange-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
                       }
     `}
                   >
