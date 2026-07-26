@@ -1,9 +1,18 @@
 import { createClient } from '@/src/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Users, CreditCard, Wallet, Plus, Search, Filter } from 'lucide-react'
+import { calculateTotalActiveLoans, calculateTotalPaid, calculateMonthlyRevenue } from '@/src/helpers/financeMath'
+import { AnimatedPage } from '@/src/components/ui/AnimatedPage'
+import { SearchBar } from '@/src/components/ui/SearchBar'
+import { MembersTable } from '@/src/components/members/MembersTable'
+import { Plus, UsersRound } from 'lucide-react'
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const searchParams = await props.searchParams
+  const query = typeof searchParams?.query === 'string' ? searchParams.query : ''
+  const status = typeof searchParams?.status === 'string' ? searchParams.status : ''
+  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : ''
+  
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -36,23 +45,79 @@ export default async function DashboardPage() {
     .eq('status', 'Active')
     .eq('is_deleted', false)
 
-  const totalActiveLoans = activeMembers?.reduce((sum, member) => sum + Number(member.loan_amount), 0) || 0
+  const totalActiveLoans = calculateTotalActiveLoans(activeMembers || [])
 
-  const { count: pendingInstallmentsCount } = await supabase
-    .from('member_installments')
+  const { count: defaultedMembersCount } = await supabase
+    .from('members')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'Pending')
+    .eq('profile_id', user.id)
+    .eq('status', 'Defaulted')
     .eq('is_deleted', false)
 
+  // Fetch installments to calculate outstanding and revenue
+  const { data: installments } = await supabase
+    .from('member_installments')
+    .select('amount_paid, received_date, members!inner(profile_id, status, is_deleted)')
+    .eq('members.profile_id', user.id)
+    .eq('members.status', 'Active')
+    .eq('members.is_deleted', false)
+    .eq('is_deleted', false)
+
+  const totalPaid = calculateTotalPaid(installments || [])
+  const totalOutstanding = totalActiveLoans - totalPaid
+
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  const revenueThisMonth = calculateMonthlyRevenue(installments || [], currentMonth, currentYear)
+
+  // Fetch search results if any filters/queries are active
+  const isSearching = query !== '' || status !== '' || sort !== ''
+  let searchResults: any[] = []
+  
+  if (isSearching) {
+    let supaQuery = supabase
+      .from('members')
+      .select('*')
+      .eq('profile_id', user.id)
+      .eq('is_deleted', false)
+
+    if (query) {
+      supaQuery = supaQuery.or(`member_name.ilike.%${query}%,mobile_no.ilike.%${query}%`)
+    }
+
+    if (status && status !== 'All') {
+      supaQuery = supaQuery.eq('status', status)
+    }
+
+    if (sort === 'amount_desc') {
+      supaQuery = supaQuery.order('loan_amount', { ascending: false })
+    } else if (sort === 'amount_asc') {
+      supaQuery = supaQuery.order('loan_amount', { ascending: true })
+    } else {
+      supaQuery = supaQuery.order('created_at', { ascending: false })
+    }
+    
+    // Only fetch first 10 for dashboard preview
+    supaQuery = supaQuery.range(0, 9)
+
+    const { data: searchedMembers } = await supaQuery
+    searchResults = searchedMembers || []
+  }
+
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <AnimatedPage className="p-8 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-brand">Dashboard</h1>
           <p className="mt-1 text-text-secondary">Welcome back, {profile.full_name}</p>
         </div>
+
         <div className="flex flex-row items-center gap-2">
-          <Link href="/members" className="text-text-secondary hover:text-brand font-medium transition-colors">View Members</Link>
+          <Link href="/members"
+            className="flex items-center gap-2 bg-button hover:bg-button-hover text-surface px-4 py-2 rounded-md font-medium transition-colors">
+            <UsersRound className="h-5 w-5" />
+            View Members
+          </Link>
           <Link
             href="/members/new"
             className="flex items-center gap-2 bg-button hover:bg-button-hover text-surface px-4 py-2 rounded-md font-medium transition-colors"
@@ -61,15 +126,18 @@ export default async function DashboardPage() {
             Add Member
           </Link>
         </div>
-
       </div>
 
+      {/* Quick Actions / Search Bar */}
+      <SearchBar />
+
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         {[
-          { label: 'Total Active Members', value: activeMembersCount?.toString() || '0' },
-          { label: 'Total Active Loans', value: `₹${totalActiveLoans.toLocaleString()}` },
-          { label: 'Pending Installments', value: pendingInstallmentsCount?.toString() || '0' },
+          { label: 'Active Members', value: activeMembersCount?.toString() || '0' },
+          { label: 'Total Outstanding', value: `₹${Math.max(0, totalOutstanding).toLocaleString()}` },
+          { label: 'Defaulted Members', value: defaultedMembersCount?.toString() || '0' },
+          { label: 'Revenue This Month', value: `₹${revenueThisMonth.toLocaleString()}` },
         ].map((metric) => (
           <div key={metric.label} className="bg-surface rounded-lg border border-border p-6 shadow-sm">
             <div className="flex items-center gap-4">
@@ -82,23 +150,13 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Quick Actions / Search Bar */}
-      <div className="bg-surface rounded-lg border border-border p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-secondary" />
-            <input
-              type="text"
-              placeholder="Search members by name or mobile..."
-              className="w-full pl-10 pr-4 py-2 rounded-md border border-border bg-background text-text focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-            />
-          </div>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-md text-text hover:bg-background transition-colors">
-            <Filter className="h-5 w-5" />
-            Filter
-          </button>
+      {isSearching && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-text mb-4">Search Results</h2>
+          <MembersTable members={searchResults} totalPages={1} currentPage={1} />
         </div>
-      </div>
-    </div>
+      )}
+
+    </AnimatedPage>
   )
 }

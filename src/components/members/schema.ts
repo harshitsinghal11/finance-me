@@ -1,8 +1,11 @@
 import { z } from 'zod'
 
+const nameRegex = /^[a-zA-Z\s\.\-']+$/;
+const phoneRegex = /^[0-9]{10}$/;
+
 export const memberSchema = z.object({
-  member_name: z.string().min(1, 'Name is required'),
-  mobile_no: z.string().min(10, 'Mobile number must be at least 10 digits'),
+  member_name: z.string().min(1, 'Name is required').regex(nameRegex, 'Name must only contain letters'),
+  mobile_no: z.string().regex(phoneRegex, 'Mobile number must be exactly 10 digits'),
   residence_address: z.string().optional(),
   permanent_address: z.string().optional(),
   company_name: z.string().optional(),
@@ -22,14 +25,14 @@ export const memberSchema = z.object({
   installment_start_date: z.string().min(1, 'Start date is required'),
   installment_end_date: z.string().optional(),
 
-  guarantor_name: z.string().optional(),
-  guarantor_mobile: z.string().optional(),
+  guarantor_name: z.string().regex(nameRegex, 'Name must only contain letters').optional().or(z.literal('')),
+  guarantor_mobile: z.string().regex(phoneRegex, 'Mobile number must be exactly 10 digits').optional().or(z.literal('')),
 
   aadhar_available: z.boolean().default(false),
   pan_available: z.boolean().default(false),
   family_id_available: z.boolean().default(false),
   original_signed_cheques: z.coerce.number().default(0),
-  whatsapp_mobile: z.string().optional(),
+  whatsapp_mobile: z.string().regex(phoneRegex, 'Mobile number must be exactly 10 digits').optional().or(z.literal('')),
   loan_agreement_available: z.boolean().default(false),
   promissory_note_available: z.boolean().default(false),
   email: z.string().email().optional().or(z.literal('')),
@@ -44,11 +47,11 @@ export const memberSchema = z.object({
   guarantor_signature: z.any().optional(),
 
   family_members: z.array(z.object({
-    name: z.string().min(1, 'Name is required'),
-    relation: z.string().min(1, 'Relation is required'),
+    name: z.string().min(1, 'Name is required').regex(nameRegex, 'Name must only contain letters'),
+    relation: z.string().min(1, 'Relation is required').regex(nameRegex, 'Relation must only contain letters'),
     profession: z.string().optional(),
     income: z.coerce.number().default(0),
-    mobile_no: z.string().optional(),
+    mobile_no: z.string().regex(phoneRegex, 'Mobile number must be exactly 10 digits').optional().or(z.literal('')),
   })).default([]),
 })
 

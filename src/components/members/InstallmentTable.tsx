@@ -133,12 +133,18 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                 <td className="px-6 py-4 text-text-secondary">₹{inst.penalty_amount || 0}</td>
                 <td className="px-6 py-4 text-text font-medium">₹{inst.amount_paid || 0}</td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${inst.status === 'Pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : ''}
-                    ${inst.status === 'Paid' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : ''}
-                    ${inst.status === 'Partial' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : ''}
-                    ${inst.status === 'Overdue' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : ''}
-                  `}>
+                  <span
+                    className={`inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border
+      ${inst.status === "Active"
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : inst.status === "Closed"
+                          ? "bg-slate-100 text-slate-700 border-slate-200"
+                          : inst.status === "Defaulted"
+                            ? "bg-red-50 text-red-700 border-red-200"
+                            : "bg-gray-100 text-gray-700 border-gray-200"
+                      }
+    `}
+                  >
                     {inst.status}
                   </span>
                 </td>
@@ -172,7 +178,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
             <div className="px-6 py-4 border-b border-border flex justify-between items-center">
               <h3 className="text-lg font-medium text-text">Update Installment #{editingInst.installment_no}</h3>
             </div>
-            
+
             <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 mb-4 bg-background/50 p-3 rounded-md border border-border text-sm">
                 <div>

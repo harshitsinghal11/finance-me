@@ -4,18 +4,25 @@ import { useState, useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2 } from 'lucide-react'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { Button } from '@/src/components/ui/Button'
 import { memberSchema, type MemberFormValues } from './schema'
 import { createClient } from '@/src/lib/supabase/client'
 import { uploadFinanceDocument } from '@/src/lib/storage'
-import { generateInstallments } from '@/src/utils/installments'
+import { generateInstallments } from '@/src/helpers/dateHelpers'
+import { calculateTotalRepayment, calculateTotalInstallmentsCount } from '@/src/helpers/financeMath'
+
+import { PersonalInfoSection } from './form-sections/PersonalInfoSection'
+import { FamilyMembersSection } from './form-sections/FamilyMembersSection'
+import { FinancialDetailsSection } from './form-sections/FinancialDetailsSection'
+import { GuarantorDetailsSection } from './form-sections/GuarantorDetailsSection'
+import { ChecklistSection } from './form-sections/ChecklistSection'
+import { DocumentUploadSection } from './form-sections/DocumentUploadSection'
 
 export function MemberForm({ initialData }: { initialData?: any }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMsg, setErrorMsg] = useState('')
   const supabase = createClient()
 
   const {
@@ -25,8 +32,8 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     watch,
     control,
     formState: { errors },
-  } = useForm<z.input<typeof memberSchema>, any, MemberFormValues>({
-    resolver: zodResolver(memberSchema),
+  } = useForm<MemberFormValues>({
+    resolver: zodResolver(memberSchema) as any,
     defaultValues: {
       member_name: initialData?.member_name || '',
       mobile_no: initialData?.mobile_no || '',
@@ -79,15 +86,14 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     const instAmt = Number(watchInstallmentAmount) || 0
 
     if (loan > 0 && instAmt > 0) {
-      const totalRepayment = loan + (loan * (rate / 100))
-      const totalInst = Math.ceil(totalRepayment / instAmt)
+      const totalRepayment = calculateTotalRepayment(loan, rate)
+      const totalInst = calculateTotalInstallmentsCount(totalRepayment, instAmt)
       setValue('total_installments', totalInst, { shouldValidate: true })
     }
   }, [watchLoanAmount, watchInterestRate, watchInstallmentAmount, setValue])
 
   const onSubmit = async (data: MemberFormValues) => {
     setIsSubmitting(true)
-    setErrorMsg('')
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -213,211 +219,36 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         if (familyError) throw familyError
       }
 
+      toast.success(initialData?.id ? 'Member updated successfully' : 'Member created successfully')
       router.push('/members')
 
     } catch (err: any) {
       console.error(err)
-      setErrorMsg(err.message || 'An error occurred while saving the member')
+      toast.error(err.message || 'An error occurred while saving the member')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const InputField = ({ label, name, type = 'text', readOnly = false }: { label: string, name: keyof MemberFormValues, type?: string, readOnly?: boolean }) => (
-    <div>
-      <label className="block text-sm font-medium text-text mb-1">{label}</label>
-      <input
-        type={type}
-        readOnly={readOnly}
-        {...register(name)}
-        className={`w-full rounded-md border border-border bg-background px-3 py-2 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand ${readOnly ? 'opacity-75 cursor-not-allowed bg-surface-hover' : ''}`}
-      />
-      {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name]?.message as string}</p>}
-    </div>
-  )
-
-  const CheckboxField = ({ label, name }: { label: string, name: keyof MemberFormValues }) => (
-    <label className="flex items-center gap-2 cursor-pointer">
-      <input
-        type="checkbox"
-        {...register(name)}
-        className="rounded border-border text-brand focus:ring-brand"
-      />
-      <span className="text-sm font-medium text-text">{label}</span>
-    </label>
-  )
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {errorMsg && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-md">
-          {errorMsg}
-        </div>
-      )}
+      <PersonalInfoSection register={register} errors={errors} />
 
-      {/* Personal Details */}
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-text mb-4">Personal Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField label="Member Name *" name="member_name" />
-          <InputField label="Mobile Number *" name="mobile_no" />
-          <InputField label="Residence Address" name="residence_address" />
-          <InputField label="Permanent Address" name="permanent_address" />
-          <InputField label="Company Name" name="company_name" />
-          <InputField label="Company Address" name="company_address" />
-          <InputField label="Vehicle Details" name="vehicle_details" />
-          <InputField label="Total Family Members" name="total_family_members" type="number" />
-        </div>
-      </div>
+      <FamilyMembersSection
+        register={register}
+        errors={errors}
+        familyFields={familyFields}
+        appendFamily={appendFamily}
+        removeFamily={removeFamily}
+      />
 
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-text">Family Members</h2>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => appendFamily({ name: '', relation: '', profession: '', income: 0, mobile_no: '' })}
-          >
-            <Plus className="h-4 w-4" /> Add Family Member
-          </Button>
-        </div>
-          
-          {familyFields.length === 0 ? (
-            <p className="text-sm text-text-secondary py-2">No family members added yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {familyFields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border border-border rounded-md items-start relative pt-8 md:pt-4">
-                  <button
-                    type="button"
-                    onClick={() => removeFamily(index)}
-                    className="absolute top-2 right-2 text-text-secondary hover:text-red-500 p-1"
-                    title="Remove Family Member"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-text mb-1">Name *</label>
-                    <input {...register(`family_members.${index}.name` as const)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-text text-sm focus:ring-brand" />
-                    {errors.family_members?.[index]?.name && <p className="text-red-500 text-xs mt-1">{errors.family_members[index]?.name?.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text mb-1">Relation *</label>
-                    <input {...register(`family_members.${index}.relation` as const)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-text text-sm focus:ring-brand" />
-                    {errors.family_members?.[index]?.relation && <p className="text-red-500 text-xs mt-1">{errors.family_members[index]?.relation?.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text mb-1">Profession</label>
-                    <input {...register(`family_members.${index}.profession` as const)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-text text-sm focus:ring-brand" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text mb-1">Income</label>
-                    <input type="number" {...register(`family_members.${index}.income` as const)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-text text-sm focus:ring-brand" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text mb-1">Mobile</label>
-                    <input {...register(`family_members.${index}.mobile_no` as const)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-text text-sm focus:ring-brand" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <FinancialDetailsSection register={register} errors={errors} />
 
-      {/* Financial Details */}
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-text mb-4">Financial Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <InputField label="Loan Amount *" name="loan_amount" type="number" />
-          <InputField label="Loan Date *" name="loan_date" type="date" />
-          <InputField label="File Charge" name="file_charge" type="number" />
+      <GuarantorDetailsSection register={register} errors={errors} />
 
-          <InputField label="Interest Rate (%)" name="interest_rate" type="number" />
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">Interest Type</label>
-            <select
-              {...register('interest_type')}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            >
-              <option value="Flat">Flat</option>
-              <option value="Reducing">Reducing</option>
-            </select>
-          </div>
-          <InputField label="Benefit Amount" name="benefit_amount" type="number" />
+      <ChecklistSection register={register} errors={errors} />
 
-          <InputField label="Installment Amount *" name="installment_amount" type="number" />
-
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">Installment Type *</label>
-            <select
-              {...register('installment_type')}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            >
-              <option value="Daily">Daily</option>
-              <option value="Weekly">Weekly</option>
-              <option value="Monthly">Monthly</option>
-            </select>
-          </div>
-
-          <InputField label="Total Installments *" name="total_installments" type="number" readOnly={true} />
-          <InputField label="Installment Start Date *" name="installment_start_date" type="date" />
-          <InputField label="Installment End Date" name="installment_end_date" type="date" />
-        </div>
-      </div>
-
-      {/* Guarantor Details */}
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-text mb-4">Guarantor Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField label="Guarantor Name" name="guarantor_name" />
-          <InputField label="Guarantor Mobile" name="guarantor_mobile" />
-        </div>
-      </div>
-
-      {/* Checklist */}
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-text mb-4">Documents & Checklist</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          <CheckboxField label="Aadhar Available" name="aadhar_available" />
-          <CheckboxField label="PAN Available" name="pan_available" />
-          <CheckboxField label="Family ID Available" name="family_id_available" />
-          <CheckboxField label="Loan Agreement Available" name="loan_agreement_available" />
-          <CheckboxField label="Promissory Note Available" name="promissory_note_available" />
-          <CheckboxField label="Loan Transaction Proof" name="loan_transaction_proof" />
-          <CheckboxField label="RC / Gold Photos" name="rc_or_gold_photos" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField label="Original Signed Cheques (Count)" name="original_signed_cheques" type="number" />
-          <InputField label="WhatsApp Mobile" name="whatsapp_mobile" />
-          <InputField label="Email Address" name="email" type="email" />
-          <InputField label="Email Password" name="email_password" />
-        </div>
-
-        <div className="mt-4">
-          <InputField label="Remarks / Notes" name="remarks" />
-        </div>
-      </div>
-
-      {/* File Uploads */}
-      <div className="bg-surface border border-border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-text mb-4">Upload Documents</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">Family Photo</label>
-            <input type="file" accept="image/*" {...register('family_photo')} className="w-full text-sm text-text-secondary" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">Member Signature</label>
-            <input type="file" accept="image/*" {...register('member_signature')} className="w-full text-sm text-text-secondary" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">Guarantor Signature</label>
-            <input type="file" accept="image/*" {...register('guarantor_signature')} className="w-full text-sm text-text-secondary" />
-          </div>
-        </div>
-      </div>
+      <DocumentUploadSection register={register} />
 
       <div className="flex justify-end gap-4">
         <Button

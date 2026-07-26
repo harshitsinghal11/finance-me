@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
 import { DeleteMemberButton } from '@/src/components/members/DeleteMemberButton'
+import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalance } from '@/src/helpers/financeMath'
 
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -27,6 +28,10 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
     .select('*')
     .eq('member_id', member.id)
     .order('installment_no', { ascending: true })
+
+  const totalPaid = calculateTotalPaid(installments || [])
+  const totalPenalties = calculateTotalPenalties(installments || [])
+  const outstandingBalance = calculateOutstandingBalance(member.loan_amount, totalPaid, totalPenalties)
 
   const { data: family } = await supabase
     .from('member_family')
@@ -106,6 +111,21 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Total Installments</dt>
               <dd className="col-span-2 text-text">{member.total_installments}</dd>
+            </div>
+            
+            <div className="grid grid-cols-3 pt-3 border-t border-border">
+              <dt className="text-text-secondary font-medium">Total Paid</dt>
+              <dd className="col-span-2 text-green-600 dark:text-green-400 font-medium">₹{totalPaid.toLocaleString()}</dd>
+            </div>
+            {totalPenalties > 0 && (
+              <div className="grid grid-cols-3">
+                <dt className="text-text-secondary font-medium">Total Penalties</dt>
+                <dd className="col-span-2 text-red-600 dark:text-red-400 font-medium">+ ₹{totalPenalties.toLocaleString()}</dd>
+              </div>
+            )}
+            <div className="grid grid-cols-3 pt-3 border-t border-border">
+              <dt className="text-text-secondary font-bold">Outstanding</dt>
+              <dd className="col-span-2 text-brand font-bold text-lg">₹{Math.max(0, outstandingBalance).toLocaleString()}</dd>
             </div>
           </dl>
         </div>
