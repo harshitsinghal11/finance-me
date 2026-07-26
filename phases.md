@@ -3,6 +3,7 @@
 This document outlines the step-by-step development process based on the `PROJECT_SPEC.md`.
 
 ## Phase 1: Initial Setup & Configuration
+- **Design System Implementation:** Integrate rules from `docs/design.md` (Typography, minimal shadows, standard borders) into Tailwind configuration and global styles.
 - **Install Dependencies:**
   - UI/UX: `lucide-react` (icons), `sonner` (toast notifications), `framer-motion` (animations), `clsx`, `tailwind-merge` (for Shadcn UI).
   - Forms: `react-hook-form`, `zod` (validation).
