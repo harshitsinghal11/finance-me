@@ -1,10 +1,11 @@
 import { createClient } from '@/src/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  calculateTotalPaid, 
-  calculateTotalActiveLoans, 
-  calculateMonthlyNetProfit 
+import {
+  calculateTotalPaid,
+  calculateTotalActiveLoans,
+  calculateMonthlyNetProfit,
+  calculateDailyCashCollected
 } from '@/src/helpers/financeMath'
 import { AnimatedPage } from '@/src/components/ui/AnimatedPage'
 import { SearchBar } from '@/src/components/ui/SearchBar'
@@ -53,13 +54,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const totalActiveLoans = calculateTotalActiveLoans(activeMembers || [])
 
-  const { count: defaultedMembersCount } = await supabase
-    .from('members')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', user.id)
-    .eq('status', 'Defaulted')
-    .eq('is_deleted', false)
-
+  // (Removed Defaulted Members fetch)
   // Fetch installments to calculate outstanding and revenue
   const { data: installments } = await supabase
     .from('member_installments')
@@ -75,6 +70,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
   const netProfitThisMonth = calculateMonthlyNetProfit(installments || [], currentMonth, currentYear)
+  const cashCollectedToday = calculateDailyCashCollected(installments || [], new Date())
 
   // Fetch search results if any filters/queries are active
   const isSearching = query !== '' || status !== '' || sort !== ''
@@ -140,12 +136,12 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         {[
-          { label: 'Active Members', value: activeMembersCount?.toString() || '0' },
-          { label: 'Total Outstanding', value: `₹${Math.max(0, totalOutstanding).toLocaleString()}` },
-          { label: 'Defaulted Members', value: defaultedMembersCount?.toString() || '0' },
-          { label: 'Net Profit This Month', value: `₹${netProfitThisMonth.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+          { label: 'Active Members', value: activeMembersCount?.toString() || '0', desc: 'Total number of members who currently have an active, unpaid loan.' },
+          { label: 'Total Outstanding', value: `₹${Math.max(0, totalOutstanding).toLocaleString()}`, desc: 'The total amount of money (Principal + Interest) that is still owed by all active members.' },
+          { label: 'Cash Collected Today', value: `₹${cashCollectedToday.toLocaleString()}`, desc: 'The total cash that was successfully collected and logged into the system today.' },
+          { label: 'Net Profit This Month', value: `₹${netProfitThisMonth.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, desc: 'Your actual profit (Interest + Penalties) separated from the principal payments for the current month.' },
         ].map((metric) => (
-          <div key={metric.label} className="bg-surface rounded-lg border border-border p-6 shadow-sm">
+          <div key={metric.label} title={metric.desc} className="bg-surface rounded-lg border border-border p-6 shadow-sm hover:border-brand transition-colors cursor-help">
             <div className="flex items-center gap-4">
               <div>
                 <p className="text-sm font-medium text-text-secondary">{metric.label}</p>

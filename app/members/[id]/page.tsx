@@ -27,6 +27,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
     .from('member_installments')
     .select('*')
     .eq('member_id', member.id)
+    .eq('is_deleted', false)
     .order('installment_no', { ascending: true })
 
   const totalPaid = calculateTotalPaid(installments || [])
@@ -43,8 +44,8 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div>
-        <Link 
-          href="/members" 
+        <Link
+          href="/members"
           className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-brand transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Members
@@ -52,10 +53,10 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-text">{member.member_name}</h1>
           <div className="flex gap-3">
-             <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors">
-                Edit Member
-             </Link>
-             <DeleteMemberButton id={member.id} />
+            <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors">
+              Edit Member
+            </Link>
+            <DeleteMemberButton id={member.id} />
           </div>
         </div>
       </div>
@@ -69,24 +70,24 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
           <dl className="space-y-4 text-sm">
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Mobile No</dt>
-              <dd className="col-span-2 text-text flex items-center gap-2"><Phone className="h-4 w-4"/> {member.mobile_no}</dd>
+              <dd className="col-span-2 text-text flex items-center gap-2"><Phone className="h-4 w-4" /> {member.mobile_no}</dd>
             </div>
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Address</dt>
-              <dd className="col-span-2 text-text flex items-start gap-2"><MapPin className="h-4 w-4 shrink-0 mt-0.5"/> {member.residence_address || 'N/A'}</dd>
+              <dd className="col-span-2 text-text flex items-start gap-2"><MapPin className="h-4 w-4 shrink-0 mt-0.5" /> {member.residence_address || 'N/A'}</dd>
             </div>
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Company</dt>
               <dd className="col-span-2 text-text">{member.company_name || 'N/A'}</dd>
             </div>
           </dl>
-          
+
           {member.family_photo_url && (
             <div className="mt-6 border-t border-border pt-4">
-               <p className="text-sm font-medium text-text-secondary mb-2 flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Family Photo</p>
-               <div className="relative h-32 w-32 rounded-md overflow-hidden border border-border">
-                  <Image src={member.family_photo_url} alt="Family" fill className="object-cover" />
-               </div>
+              <p className="text-sm font-medium text-text-secondary mb-2 flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Family Photo</p>
+              <div className="relative h-32 w-32 rounded-md overflow-hidden border border-border">
+                <Image src={member.family_photo_url} alt="Family" fill className="object-cover" />
+              </div>
             </div>
           )}
         </div>
@@ -107,23 +108,21 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
             </div>
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Start Date</dt>
-              <dd className="col-span-2 text-text flex items-center gap-2"><Calendar className="h-4 w-4"/> {format(new Date(member.installment_start_date), 'dd MMM yyyy')}</dd>
+              <dd className="col-span-2 text-text">{format(new Date(member.installment_start_date), 'dd MMM yyyy')}</dd>
             </div>
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Total Installments</dt>
               <dd className="col-span-2 text-text">{member.total_installments}</dd>
             </div>
-            
+
             <div className="grid grid-cols-3 pt-3 border-t border-border">
               <dt className="text-text-secondary font-medium">Total Paid</dt>
-              <dd className="col-span-2 text-green-600 dark:text-green-400 font-medium">₹{totalPaid.toLocaleString()}</dd>
+              <dd className="col-span-2 text-green-600 dark:text-green-700 font-medium">₹{totalPaid.toLocaleString()}</dd>
             </div>
-            {totalPenalties > 0 && (
-              <div className="grid grid-cols-3">
-                <dt className="text-text-secondary font-medium">Total Penalties</dt>
-                <dd className="col-span-2 text-red-600 dark:text-red-400 font-medium">+ ₹{totalPenalties.toLocaleString()}</dd>
-              </div>
-            )}
+            <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">Total Penalties</dt>
+              <dd className="col-span-2 text-red-600 dark:text-red-400 font-medium">+ ₹{totalPenalties.toLocaleString()}</dd>
+            </div>
             <div className="grid grid-cols-3 pt-3 border-t border-border">
               <dt className="text-text-secondary font-bold">Outstanding</dt>
               <dd className="col-span-2 text-brand font-bold text-lg">₹{Math.max(0, outstandingBalance).toLocaleString()}</dd>

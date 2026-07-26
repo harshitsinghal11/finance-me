@@ -199,17 +199,19 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         await supabase.from('members').update(updateData).eq('id', member.id)
       }
 
-      // Generate Installments only if it's a new member
-      if (!initialData?.id) {
-        const totalExpectedRepayment = calculateTotalRepayment(data.loan_amount, data.interest_rate)
+      // Generate Installments Data
+      const totalExpectedRepayment = calculateTotalRepayment(data.loan_amount, data.interest_rate)
+      const newInstallmentsData = generateInstallments(
+        data.installment_start_date,
+        data.total_installments,
+        data.installment_type,
+        data.installment_amount,
+        totalExpectedRepayment
+      )
 
-        const installmentsToInsert = generateInstallments(
-          data.installment_start_date,
-          data.total_installments,
-          data.installment_type,
-          data.installment_amount,
-          totalExpectedRepayment
-        ).map(inst => ({
+      if (!initialData?.id) {
+        // NEW MEMBER: Insert all installments
+        const installmentsToInsert = newInstallmentsData.map(inst => ({
           member_id: member.id,
           installment_no: inst.installment_no,
           due_date: inst.due_date,
@@ -221,6 +223,55 @@ export function MemberForm({ initialData }: { initialData?: any }) {
           .insert(installmentsToInsert)
 
         if (instError) throw instError
+      } else {
+        // EXISTING MEMBER: Smart update to preserve payment history
+        const { data: existingInsts, error: fetchErr } = await supabase
+          .from('member_installments')
+          .select('id, installment_no')
+          .eq('member_id', member.id)
+          .eq('is_deleted', false)
+          
+        if (fetchErr) throw fetchErr
+
+        const existingMap = new Map(existingInsts.map(i => [i.installment_no, i.id]))
+        const updatePromises = []
+        const insertData = []
+        const deleteIds = []
+
+        for (const newInst of newInstallmentsData) {
+          const existingId = existingMap.get(newInst.installment_no)
+          if (existingId) {
+            updatePromises.push(
+              supabase.from('member_installments').update({
+                due_date: newInst.due_date,
+                installment_amount: newInst.installment_amount
+              }).eq('id', existingId)
+            )
+          } else {
+            insertData.push({
+              member_id: member.id,
+              installment_no: newInst.installment_no,
+              due_date: newInst.due_date,
+              installment_amount: newInst.installment_amount,
+            })
+          }
+        }
+
+        for (const [instNo, id] of Array.from(existingMap.entries())) {
+          if (instNo > data.total_installments) {
+            deleteIds.push(id)
+          }
+        }
+
+        if (updatePromises.length > 0) {
+          await Promise.all(updatePromises)
+        }
+        if (insertData.length > 0) {
+          await supabase.from('member_installments').insert(insertData)
+        }
+        if (deleteIds.length > 0) {
+          await supabase.from('member_installments').update({ is_deleted: true }).in('id', deleteIds)
+        }
       }
 
       // Sync family members for both new and existing members

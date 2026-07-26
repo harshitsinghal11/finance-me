@@ -45,6 +45,22 @@ export function calculateTotalActiveLoans(activeMembers: any[] = []): number {
   }, 0);
 }
 
+export function calculateDailyCashCollected(installments: any[] = [], date: Date): number {
+  if (!installments || installments.length === 0) return 0;
+  
+  return installments
+    .filter(inst => {
+      if (!inst.received_date) return false;
+      const paymentDate = new Date(inst.received_date);
+      return (
+        paymentDate.getDate() === date.getDate() &&
+        paymentDate.getMonth() === date.getMonth() &&
+        paymentDate.getFullYear() === date.getFullYear()
+      );
+    })
+    .reduce((sum, inst) => sum + Number(inst.amount_paid || 0), 0);
+}
+
 export function calculateMonthlyNetProfit(installments: any[] = [], monthIndex: number, year: number): number {
   if (!installments || installments.length === 0) return 0;
   
