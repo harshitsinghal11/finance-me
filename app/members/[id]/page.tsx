@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
+import { DeleteMemberButton } from '@/src/components/members/DeleteMemberButton'
 
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -37,7 +38,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div>
         <Link 
-          href="/dashboard/members" 
+          href="/members" 
           className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-brand transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Members
@@ -45,12 +46,10 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-text">{member.member_name}</h1>
           <div className="flex gap-3">
-             <button className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors">
+             <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors">
                 Edit Member
-             </button>
-             <button className="px-4 py-2 bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 font-medium transition-colors">
-                Delete
-             </button>
+             </Link>
+             <DeleteMemberButton id={member.id} />
           </div>
         </div>
       </div>

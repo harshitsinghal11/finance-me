@@ -12,12 +12,15 @@ export const memberSchema = z.object({
 
   loan_amount: z.coerce.number().min(1, 'Loan amount is required'),
   loan_date: z.string().min(1, 'Loan date is required'),
+  interest_type: z.enum(['Flat', 'Reducing']).default('Flat'),
+  interest_rate: z.coerce.number().default(0),
   file_charge: z.coerce.number().default(0),
   benefit_amount: z.coerce.number().default(0),
   installment_amount: z.coerce.number().min(1, 'Installment amount is required'),
   installment_type: z.enum(['Daily', 'Weekly', 'Monthly']),
   total_installments: z.coerce.number().min(1, 'Total installments is required'),
   installment_start_date: z.string().min(1, 'Start date is required'),
+  installment_end_date: z.string().optional(),
 
   guarantor_name: z.string().optional(),
   guarantor_mobile: z.string().optional(),
@@ -39,6 +42,14 @@ export const memberSchema = z.object({
   family_photo: z.any().optional(),
   member_signature: z.any().optional(),
   guarantor_signature: z.any().optional(),
+
+  family_members: z.array(z.object({
+    name: z.string().min(1, 'Name is required'),
+    relation: z.string().min(1, 'Relation is required'),
+    profession: z.string().optional(),
+    income: z.coerce.number().default(0),
+    mobile_no: z.string().optional(),
+  })).default([]),
 })
 
 export type MemberFormValues = z.infer<typeof memberSchema>

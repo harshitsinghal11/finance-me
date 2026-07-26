@@ -2,6 +2,7 @@
 
 import { createClient } from '@/src/lib/supabase/client'
 import { useState } from 'react'
+import { Button } from '@/src/components/ui/Button'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -9,7 +10,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true)
     const supabase = createClient()
-    
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -28,10 +29,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <button
+        <Button
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-md bg-button px-4 py-3 text-surface transition-colors hover:bg-button-hover disabled:opacity-50 font-medium"
+          className="w-full flex items-center justify-center gap-3"
         >
           {isLoading ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-surface border-t-transparent" />
@@ -56,7 +57,7 @@ export default function LoginPage() {
             </svg>
           )}
           <span>Continue with Google</span>
-        </button>
+        </Button>
       </div>
     </div>
   )

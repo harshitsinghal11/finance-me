@@ -7,7 +7,7 @@ export default function NewMemberPage() {
     <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-8">
         <Link 
-          href="/dashboard/members" 
+          href="/members" 
           className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-brand transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Members

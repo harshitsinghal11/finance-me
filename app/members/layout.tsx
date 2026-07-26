@@ -1,6 +1,6 @@
 import { Navbar } from '@/src/components/layout/Navbar'
 
-export default function DashboardLayout({
+export default function MembersLayout({
   children,
 }: {
   children: React.ReactNode

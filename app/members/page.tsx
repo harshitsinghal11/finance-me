@@ -19,9 +19,9 @@ export default async function MembersPage() {
           <h1 className="text-3xl font-bold text-brand">Members</h1>
           <p className="mt-1 text-text-secondary">Manage all your active loan members.</p>
         </div>
-        
-        <Link 
-          href="/dashboard/members/new"
+
+        <Link
+          href="/members/new"
           className="flex items-center gap-2 bg-button hover:bg-button-hover text-surface px-4 py-2 rounded-md font-medium transition-colors"
         >
           <Plus className="h-5 w-5" />
@@ -33,9 +33,9 @@ export default async function MembersPage() {
         <div className="p-4 border-b border-border">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-secondary" />
-            <input 
-              type="text" 
-              placeholder="Search members..." 
+            <input
+              type="text"
+              placeholder="Search members..."
               className="w-full pl-10 pr-4 py-2 rounded-md border border-border bg-background text-text focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             />
           </div>
@@ -61,7 +61,7 @@ export default async function MembersPage() {
                   <td className="px-6 py-4 text-text">₹{member.loan_amount}</td>
                   <td className="px-6 py-4 text-text-secondary">{format(new Date(member.loan_date), 'dd MMM yyyy')}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    <span className={`inline-flex items-center px-3 py-2 rounded-full text-xs font-medium
                       ${member.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : ''}
                       ${member.status === 'Closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' : ''}
                       ${member.status === 'Defaulted' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : ''}
@@ -70,8 +70,8 @@ export default async function MembersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link 
-                      href={`/dashboard/members/${member.id}`}
+                    <Link
+                      href={`/members/${member.id}`}
                       className="inline-flex items-center gap-1 text-brand hover:text-brand/80 font-medium"
                     >
                       <Eye className="h-4 w-4" /> View

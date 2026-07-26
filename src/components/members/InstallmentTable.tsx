@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/src/components/ui/Button'
 import { format } from 'date-fns'
 
 const updateSchema = z.object({
@@ -240,21 +241,21 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setEditingInst(null)}
-                  className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="primary"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-button text-surface rounded-md hover:bg-button-hover font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   {isSubmitting ? 'Saving...' : 'Update'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

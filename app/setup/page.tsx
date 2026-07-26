@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/src/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/src/components/ui/Button'
 
 export default function SetupProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -67,13 +68,13 @@ export default function SetupProfilePage() {
             />
           </div>
           
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !fullName}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-button px-4 py-2.5 text-surface transition-colors hover:bg-button-hover disabled:opacity-50 font-medium mt-6"
+            className="w-full"
           >
             {isLoading ? 'Saving...' : 'Save and Continue'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

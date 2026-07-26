@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/src/components/ui/Button'
 
 const familySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -96,12 +97,13 @@ export function FamilySection({ memberId, initialFamily }: { memberId: string, i
         <h2 className="text-lg font-semibold text-brand flex items-center gap-2">
           <Users className="h-5 w-5" /> Family Details
         </h2>
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1 text-sm bg-button text-surface px-3 py-1.5 rounded-md hover:bg-button-hover transition-colors font-medium"
+          variant="primary"
+          size="sm"
         >
           <Plus className="h-4 w-4" /> Add Member
-        </button>
+        </Button>
       </div>
 
       {familyMembers.length === 0 ? (
@@ -120,6 +122,7 @@ export function FamilySection({ memberId, initialFamily }: { memberId: string, i
               <button 
                 onClick={() => handleDelete(member.id)}
                 className="text-text-secondary hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-500/10"
+                title="Remove Member"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -181,21 +184,21 @@ export function FamilySection({ memberId, initialFamily }: { memberId: string, i
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="primary"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-button text-surface rounded-md hover:bg-button-hover font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   {isSubmitting ? 'Saving...' : 'Save Member'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
