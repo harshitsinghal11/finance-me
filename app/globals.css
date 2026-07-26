@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-brand: #244D0F;
+  --color-background: #F7F8F7;
+  --color-surface: #FDFDFD;
+  --color-border: #DFE4DD;
+  --color-text: #232720;
+  --color-text-secondary: #697264;
+  --color-button: #244D0F;
+  --color-button-hover: #1F3F0E;
+  --color-button-active: #1A340D;
+  --color-link: #244D0F;
+  --color-focus-ring: #5AC026;
+  --color-success: #20A250;
+  --color-warning: #D5962A;
+  --color-error: #D5352A;
+  --color-info: #2880CC;
+  --shadow-sm: 0 1px 2px rgba(13, 25, 7, 0.14);
+  --shadow-md: 0 6px 14px rgba(13, 25, 7, 0.18);
+  --shadow-lg: 0 14px 28px rgba(13, 25, 7, 0.22);
 }
 
 @theme inline {
@@ -14,13 +30,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-background: #161B13;
+    --color-surface: #22291E;
+    --color-border: #3F4B39;
+    --color-text: #F2F3F2;
+    --color-text-secondary: #A6AEA2;
+    --color-button: #60CC28;
+    --color-button-hover: #78CF4B;
+    --color-button-active: #8DCE6C;
+    --color-link: #73D93F;
+    --color-focus-ring: #73D93F;
+    --color-success: #44DA7B;
+    --color-warning: #DFAF5D;
+    --color-error: #DF665D;
+    --color-info: #5DA2DF;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
