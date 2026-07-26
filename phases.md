@@ -21,9 +21,10 @@ This document outlines the step-by-step development process based on the `PROJEC
 
 ## Phase 3: Authentication & Login
 - **Google OAuth Setup:** Configure Google Cloud Console credentials and paste the Client ID and Secret into Supabase Auth providers.
-- **Login Page:** Build the `/login` UI.
+- **Login Page:** Build the login UI as a modular component.
 - **Auth Callback:** Implement the `/auth/callback` route for Supabase OAuth redirection.
-- **Route Protection:** Implement `middleware.ts` to protect dashboard routes, redirecting unauthenticated users to `/login`.
+- **Profile Setup:** Build the `/setup` form so new users can save their basic details into the `profiles` table before reaching the dashboard.
+- **Route Protection:** Implement `proxy.ts` to protect routes, redirecting unauthenticated users to `/`.
 
 ## Phase 4: Dashboard & Global UI
 - **Global Layout:** Setup a persistent Sidebar/Navbar for authenticated routes.
