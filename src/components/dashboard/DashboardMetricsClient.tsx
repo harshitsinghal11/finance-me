@@ -46,48 +46,48 @@ export function DashboardMetricsClient({
   return (
     <>
       <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="cursor-help rounded-lg border border-border bg-surface p-6 shadow-sm">
+        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
           <p className="text-sm font-medium text-text-secondary">Active Members</p>
           <p className="text-2xl font-bold text-text">{activeMembersCount}</p>
         </div>
 
-        <div className="cursor-help rounded-lg border border-border bg-surface p-6 shadow-sm">
+        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
           <p className="text-sm font-medium text-text-secondary">Total Outstanding</p>
           <p className="text-2xl font-bold text-text">
-            ₹{Math.max(0, totalOutstanding).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{Math.max(0, totalOutstanding).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
 
         <div
           onClick={() => setModalType('cash')}
-          className="group cursor-pointer rounded-lg border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand"
+          className="select-none group cursor-pointer rounded-lg border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand"
           title="Click to view details"
         >
           <p className="text-sm font-medium text-text-secondary transition-colors group-hover:text-brand">Collected Today</p>
           <p className="text-2xl font-bold text-text">
-            ₹{cashCollectedToday.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{cashCollectedToday.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
 
         <div
           onClick={() => setModalType('profit')}
-          className="group cursor-pointer rounded-lg border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand"
+          className="select-none  group cursor-pointer rounded-lg border border-border bg-surface p-6 shadow-sm transition-colors hover:border-brand"
           title="Click to view details"
         >
-          <p className="text-sm font-medium text-text-secondary transition-colors group-hover:text-brand">Net Profit This Month</p>
+          <p className="text-sm font-medium text-text-secondary transition-colors group-hover:text-brand flex-nowrap">Net Profit This Month</p>
           <p className="text-2xl font-bold text-text">
-            ₹{netProfitThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{netProfitThisMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
       </div>
-
+      {/* Cash Model */}
       <AnimatePresence>
         {modalType === 'cash' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 select-none"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -129,13 +129,13 @@ export function DashboardMetricsClient({
                             </td>
                             <td className="px-4 py-3 font-medium text-text">{member?.member_name || 'Unknown Member'}</td>
                             <td className="px-4 py-3 text-right text-text">
-                              ₹{Math.max(0, paid - penalty).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{Math.max(0, paid - penalty).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="px-4 py-3 text-right text-text-secondary">
-                              ₹{penalty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{penalty.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="px-4 py-3 text-right font-bold text-brand">
-                              ₹{paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                           </tr>
                         )
@@ -152,7 +152,7 @@ export function DashboardMetricsClient({
                         <tr>
                           <td colSpan={4} className="px-4 py-3 text-right text-text">Total:</td>
                           <td className="px-4 py-3 text-right text-brand">
-                            ₹{cashCollectedToday.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ₹{cashCollectedToday.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       </tfoot>
@@ -165,13 +165,14 @@ export function DashboardMetricsClient({
         )}
       </AnimatePresence>
 
+      {/* Net Profit Model */}
       <AnimatePresence>
         {modalType === 'profit' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 select-none"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -198,7 +199,7 @@ export function DashboardMetricsClient({
                         <th className="px-4 py-3 text-right font-medium">Principal Covered</th>
                         <th className="px-4 py-3 text-right font-medium">Interest Profit</th>
                         <th className="px-4 py-3 text-right font-medium">Penalty Profit</th>
-                        <th className="px-4 py-3 text-right font-medium text-purple-600">Total Profit</th>
+                        <th className="px-4 py-3 text-right font-medium ">Total Profit</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -218,16 +219,16 @@ export function DashboardMetricsClient({
                             </td>
                             <td className="px-4 py-3 font-medium text-text">{member?.member_name || 'Unknown Member'}</td>
                             <td className="px-4 py-3 text-right text-text-secondary">
-                              ₹{principalCovered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{principalCovered.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="px-4 py-3 text-right text-text">
-                              ₹{interestProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{interestProfit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="px-4 py-3 text-right text-text">
-                              ₹{penalty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{penalty.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td className="px-4 py-3 text-right font-bold text-purple-600">
-                              ₹{profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ₹{profit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                           </tr>
                         )
@@ -244,7 +245,7 @@ export function DashboardMetricsClient({
                         <tr>
                           <td colSpan={5} className="px-4 py-3 text-right text-text">Total Net Profit:</td>
                           <td className="px-4 py-3 text-right text-purple-600">
-                            ₹{netProfitThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ₹{netProfitThisMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       </tfoot>

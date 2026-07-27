@@ -20,6 +20,8 @@ interface FinancialSummaryClientProps {
     tenure_months?: number | string | null;
     installment_start_date: string;
     installment_end_date?: string | null;
+    member_signature_url?: string | null;
+    guarantor_signature_url?: string | null;
   };
   totalExpected: number;
   totalPaid: number;
@@ -52,7 +54,7 @@ export function FinancialSummaryClient({
 
   return (
     <>
-      <div className="relative rounded-lg border border-border bg-surface p-6 shadow-sm">
+      <div className="relative rounded-lg border border-border bg-surface p-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-brand">
           <CreditCard className="h-5 w-5" /> Financial Details
         </h2>
@@ -60,32 +62,41 @@ export function FinancialSummaryClient({
         <dl className="space-y-4 text-sm">
           <div className="grid grid-cols-3">
             <dt className="font-medium text-text-secondary">Loan Amount</dt>
-            <dd className="col-span-2 font-bold text-text">₹{Number(member.loan_amount).toLocaleString()}</dd>
+            <dd className="col-span-2 font-bold text-text">₹{Number(member.loan_amount).toLocaleString('en-IN')}</dd>
           </div>
 
           <div className="grid grid-cols-3">
             <dt className="font-medium text-text-secondary">Installment</dt>
             <dd className="col-span-2 text-text">
-              ₹{Number(member.installment_amount).toLocaleString()} ({member.installment_type})
+              ₹{Number(member.installment_amount).toLocaleString('en-IN')} ({member.installment_type})
             </dd>
           </div>
 
           <div className="grid grid-cols-3">
             <dt className="font-medium text-text-secondary">Total Paid</dt>
             <dd className="col-span-2 font-medium text-green-600 dark:text-green-700">
-              ₹{totalPaid.toLocaleString()}
+              ₹{totalPaid.toLocaleString('en-IN')}
             </dd>
           </div>
+          <div className="grid grid-cols-3">
+            <dt className="font-medium text-text-secondary">Total Penalties</dt>
+            <dd className="col-span-2 font-medium text-red-600 dark:text-red-400">
+              ₹{totalPenalties.toLocaleString('en-IN')}
+            </dd>
+          </div>
+
 
           <div className="grid grid-cols-3 border-t border-border pt-3">
             <dt className="font-bold text-text-secondary">Outstanding</dt>
             <dd className="col-span-2 font-bold text-red-600 dark:text-green-800">
-              ₹{Math.max(0, outstandingBalance).toLocaleString()}
+              ₹{Math.max(0, outstandingBalance).toLocaleString('en-IN')}
             </dd>
           </div>
         </dl>
 
-        <p className="mt-4 flex cursor-pointer justify-end text-xs text-brand" onClick={() => setIsModalOpen(true)}>
+
+
+        <p className="mt-4 flex font-bold cursor-pointer justify-end text-sm text-brand" onClick={() => setIsModalOpen(true)}>
           View full financial breakdown &rarr;
         </p>
 
@@ -122,7 +133,7 @@ export function FinancialSummaryClient({
                       <dl className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">Loan Amount</dt>
-                          <dd className="font-bold text-text">₹{Number(member.loan_amount).toLocaleString()}</dd>
+                          <dd className="font-bold text-text">₹{Number(member.loan_amount).toLocaleString('en-IN')}</dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">Loan Date</dt>
@@ -138,11 +149,11 @@ export function FinancialSummaryClient({
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">File Charge</dt>
-                          <dd className="text-text">₹{Number(member.file_charge || 0).toLocaleString()}</dd>
+                          <dd className="text-text">₹{Number(member.file_charge || 0).toLocaleString('en-IN')}</dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">Benefit Amount</dt>
-                          <dd className="text-text">₹{Number(member.benefit_amount || 0).toLocaleString()}</dd>
+                          <dd className="text-text">₹{Number(member.benefit_amount || 0).toLocaleString('en-IN')}</dd>
                         </div>
                       </dl>
                     </div>
@@ -155,7 +166,7 @@ export function FinancialSummaryClient({
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">Installment</dt>
                           <dd className="text-text">
-                            ₹{Number(member.installment_amount).toLocaleString()} ({member.installment_type})
+                            ₹{Number(member.installment_amount).toLocaleString('en-IN')} ({member.installment_type})
                           </dd>
                         </div>
                         <div className="flex justify-between">
@@ -181,8 +192,33 @@ export function FinancialSummaryClient({
                       </dl>
                     </div>
                   </div>
+                  {(member.member_signature_url || member.guarantor_signature_url) && (
+                    <div className="pt-6">
+                      <h4 className="mb-4 border-b border-border pb-2 text-sm font-bold uppercase tracking-wider text-text-secondary">
+                        Signatures
+                      </h4>
+                      <div className="flex flex-wrap gap-6">
+                        {member.member_signature_url && (
+                          <div>
+                            <p className="text-xs font-medium text-text-secondary mb-2">Member Signature</p>
+                            <div className="relative h-24 w-48 rounded-md border border-border bg-background overflow-hidden">
+                              <img src={member.member_signature_url} alt="Member Signature" className="object-contain w-full h-full" />
+                            </div>
+                          </div>
+                        )}
+                        {member.guarantor_signature_url && (
+                          <div>
+                            <p className="text-xs font-medium text-text-secondary mb-2">Guarantor Signature</p>
+                            <div className="relative h-24 w-48 rounded-md border border-border bg-background overflow-hidden">
+                              <img src={member.guarantor_signature_url} alt="Guarantor Signature" className="object-contain w-full h-full" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="mt-8 border-t border-border pt-6">
+                  <div className="pt-6">
                     <h4 className="mb-4 border-b border-border pb-2 text-sm font-bold uppercase tracking-wider text-text-secondary">
                       Current Balances
                     </h4>
@@ -190,29 +226,38 @@ export function FinancialSummaryClient({
                       <div className="rounded border border-border bg-background p-3 text-center">
                         <p className="mb-1 text-xs text-text-secondary">Total Expected</p>
                         <p className="text-sm font-bold text-text">
-                          ₹{totalExpected.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹{totalExpected.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
                       <div className="rounded border border-green-200 bg-background p-3 text-center dark:border-green-900">
                         <p className="mb-1 text-xs text-text-secondary">Total Paid</p>
                         <p className="text-sm font-bold text-green-600 dark:text-green-500">
-                          ₹{totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹{totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
-                      <div className="rounded border border-red-200 bg-background p-3 text-center dark:border-red-900">
-                        <p className="mb-1 text-xs text-text-secondary">Total Penalties</p>
-                        <p className="text-sm font-bold text-red-600 dark:text-red-400">
-                          ₹{totalPenalties.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
+                      {totalPenalties >= 0 && (
+                        <div className="rounded border border-red-200 bg-background p-3 text-center dark:border-red-900">
+                          <p className="mb-1 text-xs text-text-secondary">Total Penalties</p>
+                          <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                            ₹{totalPenalties.toLocaleString('en-IN', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
+                      )}
+
+
                       <div className="rounded border border-red-700 bg-red-600 p-3 text-center shadow-sm dark:bg-red-700">
                         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-red-100">Outstanding</p>
                         <p className="text-lg font-bold text-white">
-                          ₹{Math.max(0, outstandingBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹{Math.max(0, outstandingBalance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
                     </div>
                   </div>
+
+
                 </div>
               </motion.div>
             </motion.div>

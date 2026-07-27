@@ -33,7 +33,7 @@ const InstagramIcon = ({ size = 20, className = "" }: { size?: number, className
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-white/10 bg-button text-white py-8 mt-auto">
+    <footer className="w-full border-t border-white/10 bg-emerald-900/90 text-white py-8">
       <div className="container mx-auto px-6 md:px-12 lg:px-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Logo & Description */}
@@ -78,7 +78,7 @@ export function Footer() {
                 href="mailto:singlaharshit1103@outlook.com"
                 className="hover:opacity-70 transition-opacity flex items-center gap-2"
               >
-                <Mail size={16} /> Contact via Email
+                <Mail size={16} />Email
               </a>
             </div>
           </div>

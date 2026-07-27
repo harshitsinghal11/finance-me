@@ -9,7 +9,7 @@ const quicksand = Quicksand({
 
 import { Toaster } from "sonner";
 import { GlobalHelp } from "@/src/components/GlobalHelp";
-import { Footer } from "@/src/components/Footer";
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: "Finance Me",
@@ -28,12 +28,22 @@ export default function RootLayout({
       className={`${quicksand.variable} antialiased`}
     >
       <body className="font-quicksand">
+        <NextTopLoader
+          color="#0f52ba"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #0f52ba,0 0 5px #0f52ba"
+        />
         <main>
           {children}
         </main>
         <Toaster position="bottom-right" richColors />
         <GlobalHelp />
-        <Footer />
       </body>
     </html>
   );

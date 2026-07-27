@@ -105,7 +105,7 @@ export function FamilySection({ memberId, initialFamily }: { memberId: string, i
       {familyMembers.length === 0 ? (
         <p className="py-4 text-center text-sm text-text-secondary">No family members added yet.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {familyMembers.map((member) => (
             <div key={member.id} className="flex items-start justify-between rounded-md border border-border p-4">
               <div>
@@ -113,7 +113,9 @@ export function FamilySection({ memberId, initialFamily }: { memberId: string, i
                 <p className="mb-1 text-xs font-medium text-brand">{member.relation}</p>
                 {member.mobile_no && <p className="text-sm text-text-secondary">Mobile: {member.mobile_no}</p>}
                 {member.profession && <p className="text-sm text-text-secondary">Profession: {member.profession}</p>}
-                {member.income > 0 && <p className="text-sm text-text-secondary">Income: ₹{member.income}</p>}
+                <p className="text-sm text-text-secondary">
+                  Income: {member.income == null ? '-' : `₹${member.income}`}
+                </p>
               </div>
               <button
                 onClick={() => handleDelete(member.id)}
