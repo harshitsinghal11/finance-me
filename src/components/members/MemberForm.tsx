@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ type MemberFormInitialData = Partial<MemberFormValues> & {
 }
 
 type SavedMember = { id: string }
-type MemberUpdatePayload = { family_photo_url?: string; member_signature_url?: string; guarantor_signature_url?: string }
+type MemberUpdatePayload = { family_photo_url?: string | null; member_signature_url?: string | null; guarantor_signature_url?: string | null }
 
 export function MemberForm({ initialData }: { initialData?: MemberFormInitialData }) {
   const router = useRouter()
@@ -42,7 +42,7 @@ export function MemberForm({ initialData }: { initialData?: MemberFormInitialDat
     control,
     formState: { errors },
   } = useForm<MemberFormValues>({
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(memberSchema) as Resolver<MemberFormValues>,
     defaultValues: {
       member_name: initialData?.member_name || '',
       status: initialData?.status || 'Active',
@@ -52,9 +52,9 @@ export function MemberForm({ initialData }: { initialData?: MemberFormInitialDat
       company_name: initialData?.company_name || '',
       company_address: initialData?.company_address || '',
       vehicle_details: initialData?.vehicle_details || '',
-      loan_amount: initialData?.loan_amount || '',
+      loan_amount: initialData?.loan_amount || ('' as unknown as number),
       loan_date: initialData?.loan_date || '',
-      installment_amount: initialData?.installment_amount || '',
+      installment_amount: initialData?.installment_amount || ('' as unknown as number),
       installment_start_date: initialData?.installment_start_date || '',
       installment_end_date: initialData?.installment_end_date || '',
       guarantor_name: initialData?.guarantor_name || '',
