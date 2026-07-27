@@ -23,7 +23,7 @@ export function GlobalHelp() {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }
-      
+
       // Close on Escape
       if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
@@ -48,14 +48,6 @@ export function GlobalHelp() {
 
   return (
     <>
-      {/* Floating Action Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg transition-transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-4 focus:ring-focus-ring/50"
-        aria-label="Help & Information"
-      >
-        <HelpCircle className="h-7 w-7" />
-      </button>
 
       {/* Modal Overlay */}
       <AnimatePresence>
@@ -95,7 +87,7 @@ export function GlobalHelp() {
 
               {/* Content Sections */}
               <div className="mt-6 space-y-8">
-                
+
                 {/* Interest Calculation */}
                 <section>
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-text mb-3">
@@ -106,7 +98,7 @@ export function GlobalHelp() {
                     <p className="text-sm text-text-secondary">
                       Finance-Me supports both <strong>Flat</strong> and <strong>Compound</strong> interest loans with exact decimal precision across all calculations.
                     </p>
-                    
+
                     <div>
                       <h4 className="font-semibold text-sm text-text mb-1">Flat Interest</h4>
                       <p className="text-xs text-text-secondary mb-2">Calculated on the entire principal amount for the total duration of the loan. Best for short-term, fixed-return lending.</p>

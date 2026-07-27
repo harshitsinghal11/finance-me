@@ -20,24 +20,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md rounded-lg border border-border bg-surface p-8 shadow-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-brand mb-2">Finance-Me</h1>
-          <p className="text-lg text-text-secondary">
-            Sign in to manage your members and installments
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 font-[family-name:var(--font-quicksand)]">
+      <div className="w-full max-w-md rounded-2xl bg-surface p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border transition-all">
+        <div className="mb-10 text-center flex flex-col items-center">
+          <div className="h-14 w-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-text mb-2 tracking-tight">Welcome to Finance Me</h1>
+          <p className="text-sm font-medium text-text-secondary">
+            Sign in securely to manage your business
           </p>
         </div>
 
-        <Button
+        <button
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3"
+          className="w-full group flex items-center justify-center gap-3 bg-surface border border-border text-text hover:bg-background transition-all duration-200 h-12 rounded-xl font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-surface border-t-transparent" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-brand" />
           ) : (
-            <svg className="h-5 w-5 bg-surface rounded-full p-0.5" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 group-hover:scale-105 transition-transform" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -57,7 +62,7 @@ export default function LoginPage() {
             </svg>
           )}
           <span>Continue with Google</span>
-        </Button>
+        </button>
       </div>
     </div>
   )
