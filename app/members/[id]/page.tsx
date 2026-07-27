@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
 import { DeleteMemberButton } from '@/src/components/members/DeleteMemberButton'
+import { FinancialSummaryClient } from '@/src/components/members/FinancialSummaryClient'
 import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalance, calculateTotalRepayment } from '@/src/helpers/financeMath'
 
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,7 +60,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-text">{member.member_name}</h1>
           <div className="flex gap-3">
-            <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text hover:bg-surface-hover font-medium transition-colors">
+            <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text font-medium ">
               Edit Member
             </Link>
             <DeleteMemberButton id={member.id} />
@@ -114,63 +115,13 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Financial Info Card */}
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-brand mb-4 flex items-center gap-2">
-            <CreditCard className="h-5 w-5" /> Financial Details
-          </h2>
-          <dl className="space-y-4 text-sm">
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Loan Amount</dt>
-              <dd className="col-span-2 text-text font-bold">₹{member.loan_amount}</dd>
-            </div>
-
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Installment</dt>
-              <dd className="col-span-2 text-text">₹{member.installment_amount} ({member.installment_type})</dd>
-            </div>
-
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Interest Type</dt>
-              <dd className="col-span-2 text-text">{member.interest_type || 'Flat'}</dd>
-            </div>
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Interest Rate</dt>
-              <dd className="col-span-2 text-text">{member.interest_rate}%</dd>
-            </div>
-
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Start Date</dt>
-              <dd className="col-span-2 text-text">{format(new Date(member.installment_start_date), 'dd MMM yyyy')}</dd>
-            </div>
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">End Date</dt>
-              <dd className="col-span-2 text-text">{format(new Date(member.installment_end_date), 'dd MMM yyyy')}</dd>
-            </div>
-
-
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Total Installments</dt>
-              <dd className="col-span-2 text-text">{member.total_installments}</dd>
-            </div>
-
-            <div className="grid grid-cols-3 pt-3 border-t border-border">
-              <dt className="text-text-secondary font-medium">Total Expected</dt>
-              <dd className="col-span-2 text-text font-medium">₹{totalExpected.toLocaleString()}</dd>
-            </div>
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Total Paid</dt>
-              <dd className="col-span-2 text-green-600 dark:text-green-700 font-medium">₹{totalPaid.toLocaleString()}</dd>
-            </div>
-            <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Total Penalties</dt>
-              <dd className="col-span-2 text-red-600 dark:text-red-400 font-medium">+ ₹{totalPenalties.toLocaleString()}</dd>
-            </div>
-            <div className="grid grid-cols-3 pt-3 border-t border-border">
-              <dt className="text-text-secondary font-bold">Outstanding</dt>
-              <dd className="col-span-2 text-red-600 dark:text-green-800 font-bold">₹{Math.max(0, outstandingBalance).toLocaleString()}</dd>
-            </div>
-          </dl>
-        </div>
+        <FinancialSummaryClient
+          member={member}
+          totalExpected={totalExpected}
+          totalPaid={totalPaid}
+          totalPenalties={totalPenalties}
+          outstandingBalance={outstandingBalance}
+        />
       </div>
 
       <FamilySection memberId={member.id} initialFamily={family || []} />

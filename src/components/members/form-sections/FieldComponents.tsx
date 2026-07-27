@@ -18,6 +18,7 @@ export const InputField = ({ label, name, type = 'text', readOnly = false, maxLe
     <label className="block text-sm font-medium text-text mb-1">{label}</label>
     <input
       type={type}
+      step={type === 'number' ? 'any' : undefined}
       readOnly={readOnly}
       maxLength={maxLength}
       {...register(name)}
