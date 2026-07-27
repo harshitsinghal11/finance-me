@@ -100,18 +100,27 @@ export function GlobalHelp() {
                 <section>
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-text mb-3">
                     <Calculator className="h-5 w-5 text-brand" />
-                    Interest Calculation
+                    Interest & Loan Calculation
                   </h3>
-                  <div className="rounded-xl bg-background p-4 border border-border">
-                    <p className="text-sm text-text-secondary mb-3">
-                      Finance-Me uses a <strong>Flat Interest</strong> calculation for all loans. The interest is calculated on the entire principal amount for the duration of the loan.
+                  <div className="rounded-xl bg-background p-4 border border-border space-y-4">
+                    <p className="text-sm text-text-secondary">
+                      Finance-Me supports both <strong>Flat</strong> and <strong>Compound</strong> interest loans with exact decimal precision across all calculations.
                     </p>
-                    <div className="mb-4 rounded-lg bg-surface p-3 font-mono text-sm text-brand border border-border shadow-sm">
-                      Total Repayment = Loan Amount + (Loan Amount × Interest Rate / 100)
+                    
+                    <div>
+                      <h4 className="font-semibold text-sm text-text mb-1">Flat Interest</h4>
+                      <p className="text-xs text-text-secondary mb-2">Calculated on the entire principal amount for the total duration of the loan. Best for short-term, fixed-return lending.</p>
+                      <div className="rounded-lg bg-surface p-3 font-mono text-xs text-brand border border-border shadow-sm">
+                        Total Expected = Loan Amount + (Loan Amount × Rate / 100)
+                      </div>
                     </div>
-                    <div className="text-sm bg-blue-50 text-info p-3 rounded-lg border border-blue-100 flex items-start gap-2">
-                      <span className="font-bold">Example:</span>
-                      <span>If you lend <strong>₹10,000</strong> at a <strong>5%</strong> interest rate, the total expected repayment will be <strong>₹10,500</strong>.</span>
+
+                    <div>
+                      <h4 className="font-semibold text-sm text-text mb-1">Compound Interest</h4>
+                      <p className="text-xs text-text-secondary mb-2">Calculated based on the exact <strong>Tenure</strong> (Years and Months) of the loan. Automatically adjusts end-dates based on whether installments are Daily, Weekly, or Monthly.</p>
+                      <div className="rounded-lg bg-surface p-3 font-mono text-xs text-purple-600 dark:text-purple-400 border border-border shadow-sm">
+                        Total Expected = Loan Amount × (1 + Rate / 100) ^ Tenure in Years
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -128,12 +137,16 @@ export function GlobalHelp() {
                       <span className="text-sm text-text-secondary">The original sum of money borrowed by the member.</span>
                     </li>
                     <li className="rounded-xl border border-border p-3 flex flex-col sm:flex-row sm:items-baseline gap-2">
+                      <span className="font-semibold text-text min-w-[120px]">Tenure</span>
+                      <span className="text-sm text-text-secondary">The total duration of the loan used to accurately calculate compound interest and schedule end dates.</span>
+                    </li>
+                    <li className="rounded-xl border border-border p-3 flex flex-col sm:flex-row sm:items-baseline gap-2">
                       <span className="font-semibold text-text min-w-[120px]">Penalty</span>
-                      <span className="text-sm text-text-secondary">Additional charges applied for delayed or missed installment payments.</span>
+                      <span className="text-sm text-text-secondary">Additional charges manually applied for delayed or missed installment payments.</span>
                     </li>
                     <li className="rounded-xl border border-border p-3 flex flex-col sm:flex-row sm:items-baseline gap-2">
                       <span className="font-semibold text-text min-w-[120px]">Net Profit</span>
-                      <span className="text-sm text-text-secondary">The actual revenue earned (Total Interest Collected + Penalties), excluding the principal amount.</span>
+                      <span className="text-sm text-text-secondary">The actual pure revenue earned (Total Interest Collected + Penalties), isolating and ignoring the principal return.</span>
                     </li>
                   </ul>
                 </section>

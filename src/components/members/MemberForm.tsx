@@ -37,6 +37,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     resolver: zodResolver(memberSchema) as any,
     defaultValues: {
       member_name: initialData?.member_name || '',
+      status: initialData?.status || 'Active',
       mobile_no: initialData?.mobile_no || '',
       residence_address: initialData?.residence_address || '',
       permanent_address: initialData?.permanent_address || '',
@@ -89,64 +90,60 @@ export function MemberForm({ initialData }: { initialData?: any }) {
   const watchTenureMonths = watch('tenure_months')
   const watchTotalInstallments = watch('total_installments')
 
+  // Dynamically sync fields
   useEffect(() => {
-    // Auto-calculate Total Installments from Tenure
-    const years = Number(watchTenureYears) || 0
-    const months = Number(watchTenureMonths) || 0
-    const instType = watchInstallmentType || 'Daily'
-    
-    if (years > 0 || months > 0) {
-      let calculatedInstallments = 0
-      if (instType === 'Monthly') {
-        calculatedInstallments = (years * 12) + months
-      } else if (instType === 'Weekly') {
-        calculatedInstallments = (years * 52) + (months * 4) // Approx 4 weeks per month
-      } else if (instType === 'Daily') {
-        calculatedInstallments = (years * 365) + (months * 30) // Approx 30 days per month
-      }
-      
-      if (calculatedInstallments > 0 && calculatedInstallments !== Number(watchTotalInstallments)) {
-        setValue('total_installments', calculatedInstallments, { shouldValidate: true })
-      }
-    }
-  }, [watchTenureYears, watchTenureMonths, watchInstallmentType, setValue])
-
-  useEffect(() => {
-    const loan = Number(watchLoanAmount) || 0
-    const rate = Number(watchInterestRate) || 0
-    const instAmt = Number(watchInstallmentAmount) || 0
-    const totalInst = Number(watchTotalInstallments) || 0
+    const loanAmt = Number(watchLoanAmount) || 0
+    const rateAmt = Number(watchInterestRate) || 0
     const intType = watchInterestType || 'Flat'
-    const instType = watchInstallmentType || 'Daily'
+    const instType = watchInstallmentType || 'Monthly'
 
-    if (loan > 0) {
-      const totalRepayment = calculateTotalRepayment(loan, rate, intType, instType, totalInst)
-      
-      if (calcMode === 'amount' && instAmt > 0) {
-        // If we want to recalculate total installments based on amount
-        // Note: For compound interest, calculating exact periods backwards from EMI is complex.
-        // It's usually better to fix the number of periods and calculate the EMI.
-        // But for Flat, it works fine. We use the existing helper.
-        const calculatedInst = calculateTotalInstallmentsCount(
-          totalRepayment, 
-          instAmt,
-          intType,
-          loan,
-          rate,
-          instType
-        )
-        if (calculatedInst !== totalInst) {
-          setValue('total_installments', calculatedInst, { shouldValidate: true })
+    // Check which field the user is currently interacting with
+    const activeName = document.activeElement?.getAttribute('name');
+
+    if (activeName === 'tenure_years' || activeName === 'tenure_months') {
+      const y = Number(watchTenureYears) || 0
+      const m = Number(watchTenureMonths) || 0
+      let calculatedInst = 0
+      if (instType === 'Monthly') calculatedInst = (y * 12) + m
+      else if (instType === 'Weekly') calculatedInst = (y * 52) + (m * 4)
+      else if (instType === 'Daily') calculatedInst = (y * 365) + (m * 30)
+
+      if (calculatedInst > 0 && calculatedInst !== Number(watchTotalInstallments)) {
+        setValue('total_installments', calculatedInst, { shouldValidate: true })
+      }
+    } else if (activeName === 'installment_amount') {
+      // User is editing Installment Amount -> update Total Installments
+      const instAmt = Number(watchInstallmentAmount) || 0
+      if (instAmt > 0 && loanAmt > 0) {
+        const calculatedN = calculateTotalInstallmentsCount(instAmt, loanAmt, rateAmt, intType, instType)
+        if (calculatedN > 0 && calculatedN !== Number(watchTotalInstallments)) {
+          setValue('total_installments', calculatedN, { shouldValidate: true })
         }
-      } else if (calcMode === 'installments' && totalInst > 0) {
-        // Recalculate installment amount based on total installments
+      }
+    } else {
+      // User is editing anything else (Total Installments, Loan Amount, Rate, etc) -> treat Total Installments as primary
+      // and update Installment Amount
+      const totalInst = Number(watchTotalInstallments) || 0
+      if (totalInst > 0 && loanAmt > 0) {
+        const totalRepayment = calculateTotalRepayment(loanAmt, rateAmt, intType, instType, totalInst)
         const calculatedAmt = Number((totalRepayment / totalInst).toFixed(2))
-        if (calculatedAmt !== instAmt) {
+
+        if (calculatedAmt > 0 && calculatedAmt !== Number(watchInstallmentAmount)) {
           setValue('installment_amount', calculatedAmt, { shouldValidate: true })
         }
       }
     }
-  }, [watchLoanAmount, watchInterestType, watchInterestRate, watchInstallmentAmount, watchTotalInstallments, watchInstallmentType, calcMode, setValue])
+  }, [
+    watchInstallmentAmount,
+    watchTotalInstallments,
+    watchTenureYears,
+    watchTenureMonths,
+    watchLoanAmount,
+    watchInterestRate,
+    watchInterestType,
+    watchInstallmentType,
+    setValue
+  ])
 
   useEffect(() => {
     if (watchInstallmentStartDate && watchTotalInstallments > 0) {
@@ -166,6 +163,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       const memberData = {
         profile_id: user.id,
         member_name: data.member_name,
+        status: data.status,
         mobile_no: data.mobile_no,
         residence_address: data.residence_address,
         permanent_address: data.permanent_address,
@@ -260,6 +258,11 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         totalExpectedRepayment
       )
 
+      // Sync the actual total installments with how many were generated
+      // (in case the loan cleared early and stopped generating '0' installments)
+      memberData.total_installments = newInstallmentsData.length
+      data.total_installments = newInstallmentsData.length
+
       if (!initialData?.id) {
         // NEW MEMBER: Insert all installments
         const installmentsToInsert = newInstallmentsData.map(inst => ({
@@ -281,7 +284,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
           .select('id, installment_no')
           .eq('member_id', member.id)
           .eq('is_deleted', false)
-          
+
         if (fetchErr) throw fetchErr
 
         const existingMap = new Map(existingInsts.map(i => [i.installment_no, i.id]))
@@ -367,13 +370,16 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         removeFamily={removeFamily}
       />
 
-      <FinancialDetailsSection register={register} errors={errors} setCalcMode={setCalcMode} />
+      <FinancialDetailsSection
+        register={register}
+        errors={errors}
+      />
 
       <GuarantorDetailsSection register={register} errors={errors} />
 
       <ChecklistSection register={register} errors={errors} />
 
-      <DocumentUploadSection register={register} />
+      <DocumentUploadSection register={register} watch={watch} />
 
       <div className="flex justify-end gap-4">
         <Button

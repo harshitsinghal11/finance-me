@@ -29,6 +29,9 @@ export function generateInstallments(
     })
 
     remainingAmount -= amountForThisInstallment
+    
+    // Stop generating installments if the loan is fully paid off
+    if (remainingAmount <= 0) break;
 
     if (installmentType === 'Daily') {
       currentDate = addDays(currentDate, 1)

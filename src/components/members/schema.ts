@@ -5,6 +5,7 @@ const phoneRegex = /^[0-9]{10}$/;
 
 export const memberSchema = z.object({
   member_name: z.string().min(1, 'Name is required').regex(nameRegex, 'Name must only contain letters'),
+  status: z.enum(['Active', 'Closed', 'Defaulted']).default('Active'),
   mobile_no: z.string().regex(phoneRegex, 'Mobile number must be exactly 10 digits'),
   residence_address: z.string().optional(),
   permanent_address: z.string().optional(),

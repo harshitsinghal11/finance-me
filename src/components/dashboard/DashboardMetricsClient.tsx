@@ -47,7 +47,7 @@ export function DashboardMetricsClient({
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         {/* Active Members */}
-        <div className="bg-surface rounded-lg border border-border p-6 shadow-sm hover:border-brand transition-colors cursor-help">
+        <div className="bg-surface rounded-lg border border-border p-6 shadow-sm cursor-help">
           <div className="flex items-center gap-4">
             <div>
               <p className="text-sm font-medium text-text-secondary">Active Members</p>
@@ -57,7 +57,7 @@ export function DashboardMetricsClient({
         </div>
 
         {/* Total Outstanding */}
-        <div className="bg-surface rounded-lg border border-border p-6 shadow-sm hover:border-brand transition-colors cursor-help">
+        <div className="bg-surface rounded-lg border border-border p-6 shadow-sm cursor-help">
           <div className="flex items-center gap-4">
             <div>
               <p className="text-sm font-medium text-text-secondary">Total Outstanding</p>
@@ -98,11 +98,11 @@ export function DashboardMetricsClient({
       {/* Cash Collected Modal */}
       <AnimatePresence>
         {modalType === 'cash' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="bg-surface w-full max-w-3xl rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]"
             >
@@ -170,11 +170,11 @@ export function DashboardMetricsClient({
       {/* Net Profit Modal */}
       <AnimatePresence>
         {modalType === 'profit' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="bg-surface w-full max-w-4xl rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]"
             >

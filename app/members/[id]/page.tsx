@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
 import { DeleteMemberButton } from '@/src/components/members/DeleteMemberButton'
+import { MemberStatusBadge } from '@/src/components/members/MemberStatusBadge'
 import { FinancialSummaryClient } from '@/src/components/members/FinancialSummaryClient'
 import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalance, calculateTotalRepayment } from '@/src/helpers/financeMath'
 
@@ -58,7 +59,10 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
           <ArrowLeft className="h-4 w-4" /> Back to Members
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-text">{member.member_name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-text">{member.member_name}</h1>
+            <MemberStatusBadge id={member.id} currentStatus={member.status} />
+          </div>
           <div className="flex gap-3">
             <Link href={`/members/${member.id}/edit`} className="px-4 py-2 border border-border rounded-md text-text font-medium ">
               Edit Member

@@ -36,6 +36,31 @@ export const InputField = ({ label, name, type = 'text', readOnly = false, maxLe
   </div>
 )
 
+interface SelectFieldProps {
+  label: string
+  name: keyof MemberFormValues
+  options: { label: string, value: string }[]
+  register: UseFormRegister<MemberFormValues>
+  errors: FieldErrors<MemberFormValues>
+}
+
+export const SelectField = ({ label, name, options, register, errors }: SelectFieldProps) => (
+  <div>
+    <label className="block text-sm font-medium text-text mb-1">{label}</label>
+    <select
+      {...register(name)}
+      className="w-full rounded-md border border-border bg-background px-3 py-2 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+    {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name]?.message as string}</p>}
+  </div>
+)
+
 interface CheckboxFieldProps {
   label: string
   name: keyof MemberFormValues

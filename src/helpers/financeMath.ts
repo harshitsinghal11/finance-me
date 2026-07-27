@@ -74,7 +74,7 @@ export function calculateDailyCashCollected(installments: MemberInstallment[] = 
 
 export function getDailyCashInstallments(installments: MemberInstallment[] = [], date: Date): MemberInstallment[] {
   if (!installments || installments.length === 0) return [];
-  
+
   return installments.filter(inst => {
     if (!inst.received_date) return false;
     const paymentDate = new Date(inst.received_date);
@@ -97,7 +97,7 @@ export function calculateMonthlyNetProfit(installments: MemberInstallment[] = []
 
 export function getMonthlyProfitInstallments(installments: MemberInstallment[] = [], monthIndex: number, year: number): ProfitInstallment[] {
   if (!installments || installments.length === 0) return [];
-  
+
   return installments
     .filter(inst => {
       if (!inst.received_date) return false;
@@ -107,11 +107,11 @@ export function getMonthlyProfitInstallments(installments: MemberInstallment[] =
     .map(inst => {
       const amountPaid = Number(inst.amount_paid || 0);
       let profit = 0;
-      
+
       if (amountPaid > 0) {
         const penalty = Number(inst.penalty_amount || 0);
         const member = Array.isArray(inst.members) ? inst.members[0] : inst.members;
-        
+
         if (member && member.loan_amount) {
           const loanAmount = Number(member.loan_amount || 0);
           const interestRate = Number(member.interest_rate || 0);
@@ -122,17 +122,17 @@ export function getMonthlyProfitInstallments(installments: MemberInstallment[] =
             member.installment_type,
             member.total_installments
           );
-          
+
           const totalInterest = expectedRepayment - loanAmount;
           const interestRatio = expectedRepayment > 0 ? (totalInterest / expectedRepayment) : 0;
-          
+
           const basePayment = Math.max(0, amountPaid - penalty);
           const profitFromBase = basePayment * interestRatio;
-          
+
           profit = profitFromBase + penalty;
         }
       }
-      
+
       return {
         ...inst,
         calculatedProfit: profit
@@ -145,62 +145,6 @@ export function getMonthlyProfitInstallments(installments: MemberInstallment[] =
 // 4. Form Calculations (New Loan Generation)
 // ==========================================
 
-export function calculateEMI(
-  loanAmount: number | string,
-  annualInterestRate: number | string,
-  totalInstallments: number | string,
-  installmentType: string = 'Monthly'
-): number {
-  const p = Number(loanAmount) || 0;
-  const annualRate = Number(annualInterestRate) || 0;
-  const n = Number(totalInstallments) || 0;
-
-  if (p <= 0 || n <= 0) return 0;
-  if (annualRate <= 0) return p / n;
-
-  let periodsPerYear = 12;
-  if (installmentType === 'Daily') periodsPerYear = 365;
-  if (installmentType === 'Weekly') periodsPerYear = 52;
-
-  const r = (annualRate / 100) / periodsPerYear;
-  
-  // Formula: EMI = P * r * (1 + r)^n / ((1 + r)^n - 1)
-  const factor = Math.pow(1 + r, n);
-  const emi = (p * r * factor) / (factor - 1);
-  return Number(emi.toFixed(2));
-}
-
-export function calculatePeriodsFromEMI(
-  loanAmount: number | string,
-  annualInterestRate: number | string,
-  emiAmount: number | string,
-  installmentType: string = 'Monthly'
-): number {
-  const p = Number(loanAmount) || 0;
-  const annualRate = Number(annualInterestRate) || 0;
-  const emi = Number(emiAmount) || 0;
-
-  if (p <= 0 || emi <= 0) return 0;
-  if (annualRate <= 0) return Math.ceil(p / emi);
-
-  let periodsPerYear = 12;
-  if (installmentType === 'Daily') periodsPerYear = 365;
-  if (installmentType === 'Weekly') periodsPerYear = 52;
-
-  const r = (annualRate / 100) / periodsPerYear;
-
-  // Formula: n = ln(EMI / (EMI - P * r)) / ln(1 + r)
-  // If EMI is too small to cover the interest, it will never be paid off.
-  const interestOnly = p * r;
-  if (emi <= interestOnly) {
-    // EMI doesn't even cover the interest, return 0 or a very high number to indicate impossible
-    return 0; 
-  }
-
-  const n = Math.log(emi / (emi - interestOnly)) / Math.log(1 + r);
-  return Math.ceil(n);
-}
-
 export function calculateTotalRepayment(
   loanAmount: number | string,
   interestRate: number | string,
@@ -210,36 +154,66 @@ export function calculateTotalRepayment(
 ): number {
   const loan = Number(loanAmount) || 0;
   const rate = Number(interestRate) || 0;
+  const installments = Number(totalInstallments) || 0;
+
+  let periodsPerYear = 12;
+  if (installmentType === 'Daily') periodsPerYear = 365;
+  else if (installmentType === 'Weekly') periodsPerYear = 52;
+
+  const years = installments / periodsPerYear;
 
   if (interestType === 'Compound') {
-    const emi = calculateEMI(loanAmount, interestRate, totalInstallments, installmentType);
-    return emi * (Number(totalInstallments) || 0);
+    const total = loan * Math.pow(1 + rate / 100, years);
+    return Number(total.toFixed(2));
   }
 
-  // Flat Interest
-  return loan + (loan * (rate / 100));
+  // Flat (Simple) Interest
+  const total = loan * ((100 + (rate * years)) / 100);
+  return Number(total.toFixed(2));
 }
 
 export function calculateTotalInstallmentsCount(
-  totalRepayment: number, 
   installmentAmount: number | string,
+  loanAmount: number | string,
+  interestRate: number | string,
   interestType: string = 'Flat',
-  loanAmount?: number | string,
-  interestRate?: number | string,
-  installmentType?: string
+  installmentType: string = 'Monthly'
 ): number {
   const instAmt = Number(installmentAmount) || 0;
-  if (instAmt <= 0) return 0;
+  const loan = Number(loanAmount) || 0;
+  const rate = Number(interestRate) || 0;
+  if (instAmt <= 0 || loan <= 0) return 0;
+
+  let periodsPerYear = 12;
+  if (installmentType === 'Daily') periodsPerYear = 365;
+  else if (installmentType === 'Weekly') periodsPerYear = 52;
 
   if (interestType === 'Compound') {
-    return calculatePeriodsFromEMI(
-      loanAmount || 0,
-      interestRate || 0,
-      instAmt,
-      installmentType || 'Monthly'
-    );
+    // Solve N * I = P * (1 + R/100)^(N / Py) iteratively
+    let n = 1;
+    let currentInstAmt = (loan * Math.pow(1 + rate / 100, n / periodsPerYear)) / n;
+
+    while (currentInstAmt > instAmt && n < 10000) {
+      n++;
+      currentInstAmt = (loan * Math.pow(1 + rate / 100, n / periodsPerYear)) / n;
+    }
+
+    // If the interest alone exceeds the installment amount, it's a debt trap
+    if (n >= 10000) return 0;
+
+    return n;
   }
-  
-  // Math.ceil ensures that any fractional remainder requires one final (smaller) installment
-  return Math.ceil(totalRepayment / instAmt);
+
+  // Flat (Simple) Interest
+  // Solve N * I = P + (P * R * N) / (100 * Py)
+  // N = P / (I - (P * R) / (100 * Py))
+  const interestPerPeriod = (loan * rate) / (100 * periodsPerYear);
+
+  if (instAmt <= interestPerPeriod) {
+    // Installment doesn't even cover the interest per period!
+    return 0;
+  }
+
+  const n = loan / (instAmt - interestPerPeriod);
+  return Math.ceil(n);
 }
