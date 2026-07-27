@@ -53,11 +53,23 @@ NEXT_PUBLIC_ANON_KEY=
 npm run dev
 ```
 
-## Deployment Strategy
-No deployment configuration files are committed in this repository. The app is structured as a standard Next.js deployment backed by Supabase.
+## 🤝 Contributing
 
-## Contributing Guidelines
-- See [CONTRIBUTING.md](CONTRIBUTING.md)
+Contributions are always welcome!
+
+If you'd like to improve this project, please read our
+[Contributing Guide](./CONTRIBUTING.md) before submitting a Pull Request.
+
+## License
+
+This project is open source and available under the [MIT License](./LICENSE).
+
+---
 
 ## Contact Owner
-- Developer contact found in the codebase footer: `singlaharshit1103@outlook.com`
+Built by **Harshit Singhal** | BTech CSE | Manav Rachna University
+
+- [Portfolio](https://harshit-singhal.vercel.app)
+- [LinkedIn](https://linkedin.com/in/harshitsinghal11)
+
+> _Feel free to reach out if you're building something similar or have questions about the implementation._
