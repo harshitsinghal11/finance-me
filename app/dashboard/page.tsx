@@ -22,6 +22,7 @@ interface DashboardMemberRecord extends ActiveMember {
   mobile_no: string
   loan_date: string
   installment_amount: number | string
+  total_installments: number
   status: 'Active' | 'Closed' | 'Defaulted'
   created_at?: string
 }
@@ -149,7 +150,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       <SearchBar />
 
       {/* Metrics Row */}
-      <DashboardMetricsClient 
+      <DashboardMetricsClient
         activeMembersCount={activeMembersCount?.toString() || '0'}
         totalOutstanding={totalOutstanding}
         cashCollectedToday={cashCollectedToday}
