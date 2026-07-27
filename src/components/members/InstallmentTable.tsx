@@ -146,6 +146,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
               <th className="px-6 py-4 font-medium">Expected</th>
               <th className="px-6 py-4 font-medium">Penalty</th>
               <th className="px-6 py-4 font-medium">Paid</th>
+              <th className="px-6 py-4 font-medium">Remaining</th>
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium">Received On</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -164,6 +165,12 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                 <td className="px-6 py-4 text-text-secondary">₹{inst.penalty_amount || 0}</td>
 
                 <td className="px-6 py-4 text-text font-medium">₹{inst.amount_paid || 0}</td>
+
+                <td className="px-6 py-4 text-text-secondary font-medium">
+                  {inst.status === 'Paid' || !inst.amount_paid || inst.amount_paid === 0 
+                    ? '-' 
+                    : `₹${Math.max(0, (Number(inst.installment_amount) + Number(inst.penalty_amount || 0)) - Number(inst.amount_paid))}`}
+                </td>
 
                 <td className="px-6 py-4">
                   <span
@@ -194,7 +201,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
             ))}
             {installments.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-text-secondary">
+                <td colSpan={9} className="px-6 py-8 text-center text-text-secondary">
                   No installments generated.
                 </td>
               </tr>

@@ -68,18 +68,32 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
             <User className="h-5 w-5" /> Personal Details
           </h2>
           <dl className="space-y-4 text-sm">
+
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Mobile No</dt>
               <dd className="col-span-2 text-text flex items-center gap-2"><Phone className="h-4 w-4" /> {member.mobile_no}</dd>
             </div>
+
             <div className="grid grid-cols-3">
-              <dt className="text-text-secondary font-medium">Address</dt>
+              <dt className="text-text-secondary font-medium">Residence Address</dt>
               <dd className="col-span-2 text-text flex items-start gap-2"><MapPin className="h-4 w-4 shrink-0 mt-0.5" /> {member.residence_address || 'N/A'}</dd>
             </div>
+
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Company</dt>
               <dd className="col-span-2 text-text">{member.company_name || 'N/A'}</dd>
             </div>
+
+            <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">Company Address</dt>
+              <dd className="col-span-2 text-text">{member.company_address || 'N/A'}</dd>
+            </div>
+
+            <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">Vehicle Details</dt>
+              <dd className="col-span-2 text-text">{member.vehicle_details || 'N/A'}</dd>
+            </div>
+
           </dl>
 
           {member.family_photo_url && (
@@ -102,20 +116,37 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
               <dt className="text-text-secondary font-medium">Loan Amount</dt>
               <dd className="col-span-2 text-text font-bold">₹{member.loan_amount}</dd>
             </div>
+
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Installment</dt>
               <dd className="col-span-2 text-text">₹{member.installment_amount} ({member.installment_type})</dd>
             </div>
+
+            <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">Interest Rate</dt>
+              <dd className="col-span-2 text-text">{member.interest_rate}%</dd>
+            </div>
+
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Start Date</dt>
               <dd className="col-span-2 text-text">{format(new Date(member.installment_start_date), 'dd MMM yyyy')}</dd>
             </div>
+            <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">End Date</dt>
+              <dd className="col-span-2 text-text">{format(new Date(member.installment_end_date), 'dd MMM yyyy')}</dd>
+            </div>
+
+
             <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Total Installments</dt>
               <dd className="col-span-2 text-text">{member.total_installments}</dd>
             </div>
 
             <div className="grid grid-cols-3 pt-3 border-t border-border">
+              <dt className="text-text-secondary font-medium">Total Expected</dt>
+              <dd className="col-span-2 text-text font-medium">₹{totalExpected.toLocaleString()}</dd>
+            </div>
+            <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Total Paid</dt>
               <dd className="col-span-2 text-green-600 dark:text-green-700 font-medium">₹{totalPaid.toLocaleString()}</dd>
             </div>
