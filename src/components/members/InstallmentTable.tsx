@@ -158,11 +158,17 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
           <tbody className="divide-y divide-border">
             {installments.map((inst) => (
               <tr key={inst.id} className="hover:bg-background/50 transition-colors">
+
                 <td className="px-6 py-4 font-medium text-text">#{inst.installment_no}</td>
+
                 <td className="px-6 py-4 text-text-secondary">{format(new Date(inst.due_date), 'dd MMM yyyy')}</td>
+
                 <td className="px-6 py-4 text-text font-medium">₹{inst.installment_amount}</td>
+
                 <td className="px-6 py-4 text-text-secondary">₹{inst.penalty_amount || 0}</td>
+
                 <td className="px-6 py-4 text-text font-medium">₹{inst.amount_paid || 0}</td>
+
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border
@@ -172,14 +178,12 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                           ? "bg-red-50 text-red-700 border-red-200"
                           : inst.status === "Partial"
                             ? "bg-orange-50 text-orange-700 border-orange-200"
-                            : "bg-blue-50 text-blue-700 border-blue-200"
-                      }
-    `}
-                  >
-                    {inst.status}
+                            : "bg-blue-50 text-blue-700 border-blue-200"}`}>{inst.status}
                   </span>
                 </td>
+
                 <td className="px-6 py-4 text-text-secondary">{inst.received_date ? format(new Date(inst.received_date), 'dd MMM yyyy') : '-'}</td>
+
                 <td className="px-6 py-4 text-right">
                   <button
                     onClick={() => openEditModal(inst)}
@@ -189,6 +193,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                     <Edit2 className="h-4 w-4" />
                   </button>
                 </td>
+
               </tr>
             ))}
             {installments.length === 0 && (

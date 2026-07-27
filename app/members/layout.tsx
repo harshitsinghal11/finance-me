@@ -1,4 +1,4 @@
-import { Navbar } from '@/src/components/layout/Navbar'
+import { Navbar } from '@/src/components/Navbar'
 
 export default function MembersLayout({
   children,

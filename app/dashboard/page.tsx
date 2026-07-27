@@ -49,14 +49,14 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       .eq('profile_id', user.id)
       .eq('status', 'Active')
       .eq('is_deleted', false),
-    
+
     supabase
       .from('members')
       .select('loan_amount, interest_rate')
       .eq('profile_id', user.id)
       .eq('status', 'Active')
       .eq('is_deleted', false),
-      
+
     supabase
       .from('member_installments')
       .select('amount_paid, penalty_amount, received_date, members!inner(profile_id, status, is_deleted, loan_amount, interest_rate)')
@@ -139,10 +139,29 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         {[
-          { label: 'Active Members', value: activeMembersCount?.toString() || '0', desc: 'Total number of members who currently have an active, unpaid loan.' },
-          { label: 'Total Outstanding', value: `₹${Math.max(0, totalOutstanding).toLocaleString()}`, desc: 'The total amount of money (Principal + Interest) that is still owed by all active members.' },
-          { label: 'Cash Collected Today', value: `₹${cashCollectedToday.toLocaleString()}`, desc: 'The total cash that was successfully collected and logged into the system today.' },
-          { label: 'Net Profit This Month', value: `₹${netProfitThisMonth.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, desc: 'Your actual profit (Interest + Penalties) separated from the principal payments for the current month.' },
+          {
+            label: 'Active Members',
+            value: activeMembersCount?.toString() || '0',
+            desc: 'Total number of members who currently have an active, unpaid loan.'
+          },
+
+          {
+            label: 'Total Outstanding',
+            value: `₹${Math.max(0, totalOutstanding).toLocaleString()}`,
+            desc: 'The total amount of money (Principal + Interest) that is still owed by all active members.'
+          },
+
+          {
+            label: 'Cash Collected Today',
+            value: `₹${cashCollectedToday.toLocaleString()}`,
+            desc: 'The total cash that was successfully collected and logged into the system today.'
+          },
+
+          {
+            label: 'Net Profit This Month',
+            value: `₹${netProfitThisMonth.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+            desc: 'Your actual profit (Interest + Penalties) separated from the principal payments for the current month.'
+          },
         ].map((metric) => (
           <div key={metric.label} title={metric.desc} className="bg-surface rounded-lg border border-border p-6 shadow-sm hover:border-brand transition-colors cursor-help">
             <div className="flex items-center gap-4">
