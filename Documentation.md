@@ -38,6 +38,7 @@ Centralized in `financeMath.ts`, the application handles complex, high-precision
 - **Flat Interest:** Calculated on the entire principal amount for the total duration.
 - **Compound Interest:** Automatically scales based on exact **Tenure** (Years and Months).
 - **Dynamic Installment Generation:** The system automatically schedules `Daily`, `Weekly`, or `Monthly` installments based on the loan date, tenure, and exact repayment formulas.
+- **Dynamic Form Synchronization:** Real-time, bidirectional syncing between Installment Amount, Total Installments, and Tenure. Modifying any parameter instantly calculates the others with mathematical precision.
 - **Net Profit Tracking:** Isolates actual revenue (Interest + Penalties - File Charges/Benefits) separate from the principal return.
 
 ### Document Management
