@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 import { GlobalHelp } from "@/src/components/GlobalHelp";
 
 export const metadata: Metadata = {
-  title: "Finance-Me",
+  title: "Finance Me",
   description: "Micro-finance member management system",
 };
 

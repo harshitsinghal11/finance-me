@@ -23,7 +23,7 @@ import { DocumentUploadSection } from './form-sections/DocumentUploadSection'
 export function MemberForm({ initialData }: { initialData?: any }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [calcMode, setCalcMode] = useState<'amount' | 'installments'>('amount')
+  const [calcMode, setCalcMode] = useState<'amount' | 'installments'>('installments')
   const supabase = createClient()
 
   const {
@@ -56,9 +56,12 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       remarks: initialData?.remarks || '',
       total_family_members: initialData?.total_family_members || 0,
       file_charge: initialData?.file_charge || 0,
+      interest_type: initialData?.interest_type || 'Flat',
       interest_rate: initialData?.interest_rate || 0,
       benefit_amount: initialData?.benefit_amount || 0,
       installment_type: initialData?.installment_type || 'Daily',
+      tenure_years: initialData?.tenure_years || 0,
+      tenure_months: initialData?.tenure_months || 0,
       total_installments: initialData?.total_installments || 100,
       aadhar_available: initialData?.aadhar_available || false,
       pan_available: initialData?.pan_available || false,
@@ -77,34 +80,73 @@ export function MemberForm({ initialData }: { initialData?: any }) {
   })
 
   const watchLoanAmount = watch('loan_amount')
+  const watchInterestType = watch('interest_type')
   const watchInterestRate = watch('interest_rate')
   const watchInstallmentAmount = watch('installment_amount')
   const watchInstallmentStartDate = watch('installment_start_date')
   const watchInstallmentType = watch('installment_type')
+  const watchTenureYears = watch('tenure_years')
+  const watchTenureMonths = watch('tenure_months')
   const watchTotalInstallments = watch('total_installments')
+
+  useEffect(() => {
+    // Auto-calculate Total Installments from Tenure
+    const years = Number(watchTenureYears) || 0
+    const months = Number(watchTenureMonths) || 0
+    const instType = watchInstallmentType || 'Daily'
+    
+    if (years > 0 || months > 0) {
+      let calculatedInstallments = 0
+      if (instType === 'Monthly') {
+        calculatedInstallments = (years * 12) + months
+      } else if (instType === 'Weekly') {
+        calculatedInstallments = (years * 52) + (months * 4) // Approx 4 weeks per month
+      } else if (instType === 'Daily') {
+        calculatedInstallments = (years * 365) + (months * 30) // Approx 30 days per month
+      }
+      
+      if (calculatedInstallments > 0 && calculatedInstallments !== Number(watchTotalInstallments)) {
+        setValue('total_installments', calculatedInstallments, { shouldValidate: true })
+      }
+    }
+  }, [watchTenureYears, watchTenureMonths, watchInstallmentType, setValue])
 
   useEffect(() => {
     const loan = Number(watchLoanAmount) || 0
     const rate = Number(watchInterestRate) || 0
     const instAmt = Number(watchInstallmentAmount) || 0
     const totalInst = Number(watchTotalInstallments) || 0
+    const intType = watchInterestType || 'Flat'
+    const instType = watchInstallmentType || 'Daily'
 
     if (loan > 0) {
-      const totalRepayment = calculateTotalRepayment(loan, rate)
+      const totalRepayment = calculateTotalRepayment(loan, rate, intType, instType, totalInst)
       
       if (calcMode === 'amount' && instAmt > 0) {
-        const calculatedInst = calculateTotalInstallmentsCount(totalRepayment, instAmt)
+        // If we want to recalculate total installments based on amount
+        // Note: For compound interest, calculating exact periods backwards from EMI is complex.
+        // It's usually better to fix the number of periods and calculate the EMI.
+        // But for Flat, it works fine. We use the existing helper.
+        const calculatedInst = calculateTotalInstallmentsCount(
+          totalRepayment, 
+          instAmt,
+          intType,
+          loan,
+          rate,
+          instType
+        )
         if (calculatedInst !== totalInst) {
           setValue('total_installments', calculatedInst, { shouldValidate: true })
         }
       } else if (calcMode === 'installments' && totalInst > 0) {
-        const calculatedAmt = Math.ceil(totalRepayment / totalInst)
+        // Recalculate installment amount based on total installments
+        const calculatedAmt = Number((totalRepayment / totalInst).toFixed(2))
         if (calculatedAmt !== instAmt) {
           setValue('installment_amount', calculatedAmt, { shouldValidate: true })
         }
       }
     }
-  }, [watchLoanAmount, watchInterestRate, watchInstallmentAmount, watchTotalInstallments, calcMode, setValue])
+  }, [watchLoanAmount, watchInterestType, watchInterestRate, watchInstallmentAmount, watchTotalInstallments, watchInstallmentType, calcMode, setValue])
 
   useEffect(() => {
     if (watchInstallmentStartDate && watchTotalInstallments > 0) {
@@ -134,11 +176,14 @@ export function MemberForm({ initialData }: { initialData?: any }) {
 
         loan_amount: data.loan_amount,
         loan_date: data.loan_date,
+        interest_type: data.interest_type,
         interest_rate: data.interest_rate,
         file_charge: data.file_charge,
         benefit_amount: data.benefit_amount,
         installment_amount: data.installment_amount,
         installment_type: data.installment_type,
+        tenure_years: data.tenure_years,
+        tenure_months: data.tenure_months,
         total_installments: data.total_installments,
         installment_start_date: data.installment_start_date,
         installment_end_date: data.installment_end_date || null,
@@ -200,7 +245,13 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       }
 
       // Generate Installments Data
-      const totalExpectedRepayment = calculateTotalRepayment(data.loan_amount, data.interest_rate)
+      const totalExpectedRepayment = calculateTotalRepayment(
+        data.loan_amount,
+        data.interest_rate,
+        data.interest_type,
+        data.installment_type,
+        data.total_installments
+      )
       const newInstallmentsData = generateInstallments(
         data.installment_start_date,
         data.total_installments,

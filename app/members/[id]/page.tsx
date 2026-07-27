@@ -32,7 +32,13 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
 
   const totalPaid = calculateTotalPaid(installments || [])
   const totalPenalties = calculateTotalPenalties(installments || [])
-  const totalExpected = calculateTotalRepayment(member.loan_amount, member.interest_rate)
+  const totalExpected = calculateTotalRepayment(
+    member.loan_amount,
+    member.interest_rate,
+    member.interest_type,
+    member.installment_type,
+    member.total_installments
+  )
   const outstandingBalance = calculateOutstandingBalance(totalExpected, totalPaid, totalPenalties)
 
   const { data: family } = await supabase
@@ -62,6 +68,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
         {/* Personal Info Card */}
         <div className="bg-surface border border-border rounded-lg p-6">
           <h2 className="text-lg font-semibold text-brand mb-4 flex items-center gap-2">
@@ -123,6 +130,10 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
             </div>
 
             <div className="grid grid-cols-3">
+              <dt className="text-text-secondary font-medium">Interest Type</dt>
+              <dd className="col-span-2 text-text">{member.interest_type || 'Flat'}</dd>
+            </div>
+            <div className="grid grid-cols-3">
               <dt className="text-text-secondary font-medium">Interest Rate</dt>
               <dd className="col-span-2 text-text">{member.interest_rate}%</dd>
             </div>
@@ -156,7 +167,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
             </div>
             <div className="grid grid-cols-3 pt-3 border-t border-border">
               <dt className="text-text-secondary font-bold">Outstanding</dt>
-              <dd className="col-span-2 text-brand font-bold text-lg">₹{Math.max(0, outstandingBalance).toLocaleString()}</dd>
+              <dd className="col-span-2 text-red-600 dark:text-green-800 font-bold">₹{Math.max(0, outstandingBalance).toLocaleString()}</dd>
             </div>
           </dl>
         </div>

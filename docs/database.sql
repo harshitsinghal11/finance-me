@@ -37,12 +37,14 @@ CREATE TABLE members (
     -- Financial Details
     loan_amount DECIMAL(12, 2) NOT NULL,
     loan_date DATE NOT NULL,
-    interest_type TEXT DEFAULT 'Flat',
+    interest_type TEXT DEFAULT 'Flat', -- 'Flat' or 'Compound'
     interest_rate DECIMAL(5, 2) DEFAULT 0,
     file_charge DECIMAL(12, 2) DEFAULT 0,
     benefit_amount DECIMAL(12, 2) DEFAULT 0,
     installment_amount DECIMAL(12, 2) NOT NULL,
     installment_type installment_type NOT NULL,
+    tenure_years DECIMAL(5, 2) DEFAULT 0,
+    tenure_months DECIMAL(5, 2) DEFAULT 0,
     total_installments INTEGER NOT NULL,
     installment_start_date DATE NOT NULL,
     installment_end_date DATE,
