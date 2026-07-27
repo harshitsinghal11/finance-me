@@ -9,6 +9,7 @@ const quicksand = Quicksand({
 
 import { Toaster } from "sonner";
 import { GlobalHelp } from "@/src/components/GlobalHelp";
+import { Footer } from "@/src/components/Footer";
 
 export const metadata: Metadata = {
   title: "Finance Me",
@@ -24,12 +25,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${quicksand.variable} h-full antialiased`}
+      className={`${quicksand.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-text">
-        {children}
+      <body>
+        <main>
+          {children}
+        </main>
         <Toaster position="bottom-right" richColors />
         <GlobalHelp />
+        <Footer />
       </body>
     </html>
   );
