@@ -14,6 +14,17 @@ import { DueTodayWidget } from '@/src/components/dashboard/DueTodayWidget'
 import { RecentMembersWidget } from '@/src/components/dashboard/RecentMembersWidget'
 import { DashboardMetricsClient } from '@/src/components/dashboard/DashboardMetricsClient'
 import { Plus, UsersRound } from 'lucide-react'
+import type { ActiveMember } from '@/src/helpers/financeMath'
+
+interface DashboardMemberRecord extends ActiveMember {
+  id: string
+  member_name: string
+  mobile_no: string
+  loan_date: string
+  installment_amount: number | string
+  status: 'Active' | 'Closed' | 'Defaulted'
+  created_at?: string
+}
 
 export default async function DashboardPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const searchParams = await props.searchParams
@@ -78,7 +89,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   // Fetch search results if any filters/queries are active
   const isSearching = query !== '' || status !== '' || sort !== ''
-  let searchResults: any[] = []
+  let searchResults: DashboardMemberRecord[] = []
 
   if (isSearching) {
     let supaQuery = supabase

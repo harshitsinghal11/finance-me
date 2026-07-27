@@ -1,8 +1,7 @@
 import { createClient } from '@/src/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, Phone, MapPin, Calendar, CreditCard, Clock, Image as ImageIcon } from 'lucide-react'
-import { format } from 'date-fns'
+import { ArrowLeft, User, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { FamilySection } from '@/src/components/members/FamilySection'
 import { InstallmentTable } from '@/src/components/members/InstallmentTable'
@@ -14,11 +13,17 @@ import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalanc
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/')
+  }
 
   const { data: member } = await supabase
     .from('members')
     .select('*')
     .eq('id', resolvedParams.id)
+    .eq('profile_id', user.id)
     .single()
 
   if (!member || member.is_deleted) {

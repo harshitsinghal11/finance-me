@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { z } from 'zod'
 import { toast } from 'sonner'
 import { Button } from '@/src/components/ui/Button'
 import { memberSchema, type MemberFormValues } from './schema'
 import { createClient } from '@/src/lib/supabase/client'
 import { uploadFinanceDocument } from '@/src/lib/storage'
-import { generateInstallments, calculateEndDate } from '@/src/helpers/dateHelpers'
+import { generateInstallments, calculateEndDate, type InstallmentType } from '@/src/helpers/dateHelpers'
 import { calculateTotalRepayment, calculateTotalInstallmentsCount } from '@/src/helpers/financeMath'
 
 import { PersonalInfoSection } from './form-sections/PersonalInfoSection'
@@ -20,10 +19,19 @@ import { GuarantorDetailsSection } from './form-sections/GuarantorDetailsSection
 import { ChecklistSection } from './form-sections/ChecklistSection'
 import { DocumentUploadSection } from './form-sections/DocumentUploadSection'
 
-export function MemberForm({ initialData }: { initialData?: any }) {
+type ExistingFamilyMember = MemberFormValues['family_members'][number] & { is_deleted?: boolean }
+type MemberFormInitialData = Partial<MemberFormValues> & {
+  id?: string
+  member_family?: ExistingFamilyMember[]
+}
+
+type SavedMember = { id: string }
+type MemberUpdatePayload = { family_photo_url?: string; member_signature_url?: string; guarantor_signature_url?: string }
+
+export function MemberForm({ initialData }: { initialData?: MemberFormInitialData }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [calcMode, setCalcMode] = useState<'amount' | 'installments'>('installments')
+  const [calculationDriver, setCalculationDriver] = useState<'installment_amount' | 'total_installments' | 'tenure'>('total_installments')
   const supabase = createClient()
 
   const {
@@ -34,7 +42,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     control,
     formState: { errors },
   } = useForm<MemberFormValues>({
-    resolver: zodResolver(memberSchema) as any,
+    resolver: zodResolver(memberSchema),
     defaultValues: {
       member_name: initialData?.member_name || '',
       status: initialData?.status || 'Active',
@@ -71,7 +79,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       loan_agreement_available: initialData?.loan_agreement_available || false,
       promissory_note_available: initialData?.promissory_note_available || false,
       rc_or_gold_photos: initialData?.rc_or_gold_photos || false,
-      family_members: initialData?.member_family?.filter((f: any) => !f.is_deleted) || [],
+      family_members: initialData?.member_family?.filter((f) => !f.is_deleted) || [],
     }
   })
 
@@ -97,10 +105,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     const intType = watchInterestType || 'Flat'
     const instType = watchInstallmentType || 'Monthly'
 
-    // Check which field the user is currently interacting with
-    const activeName = document.activeElement?.getAttribute('name');
-
-    if (activeName === 'tenure_years' || activeName === 'tenure_months') {
+    if (calculationDriver === 'tenure') {
       const y = Number(watchTenureYears) || 0
       const m = Number(watchTenureMonths) || 0
       let calculatedInst = 0
@@ -111,8 +116,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       if (calculatedInst > 0 && calculatedInst !== Number(watchTotalInstallments)) {
         setValue('total_installments', calculatedInst, { shouldValidate: true })
       }
-    } else if (activeName === 'installment_amount') {
-      // User is editing Installment Amount -> update Total Installments
+    } else if (calculationDriver === 'installment_amount') {
       const instAmt = Number(watchInstallmentAmount) || 0
       if (instAmt > 0 && loanAmt > 0) {
         const calculatedN = calculateTotalInstallmentsCount(instAmt, loanAmt, rateAmt, intType, instType)
@@ -121,8 +125,6 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         }
       }
     } else {
-      // User is editing anything else (Total Installments, Loan Amount, Rate, etc) -> treat Total Installments as primary
-      // and update Installment Amount
       const totalInst = Number(watchTotalInstallments) || 0
       if (totalInst > 0 && loanAmt > 0) {
         const totalRepayment = calculateTotalRepayment(loanAmt, rateAmt, intType, instType, totalInst)
@@ -142,12 +144,13 @@ export function MemberForm({ initialData }: { initialData?: any }) {
     watchInterestRate,
     watchInterestType,
     watchInstallmentType,
+    calculationDriver,
     setValue
   ])
 
   useEffect(() => {
     if (watchInstallmentStartDate && watchTotalInstallments > 0) {
-      const endDate = calculateEndDate(watchInstallmentStartDate, watchTotalInstallments, watchInstallmentType as any)
+      const endDate = calculateEndDate(watchInstallmentStartDate, watchTotalInstallments, watchInstallmentType as InstallmentType)
       setValue('installment_end_date', endDate, { shouldValidate: true })
     }
   }, [watchInstallmentStartDate, watchTotalInstallments, watchInstallmentType, setValue])
@@ -203,7 +206,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
         remarks: data.remarks,
       }
 
-      let member: any;
+      let member: SavedMember
 
       if (initialData?.id) {
         // Update
@@ -227,7 +230,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       }
 
       // Handle Files
-      const updateData: any = {}
+      const updateData: MemberUpdatePayload = {}
       if (data.family_photo?.[0]) {
         updateData.family_photo_url = await uploadFinanceDocument(data.family_photo[0], member.id, 'family_photo')
       }
@@ -287,7 +290,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
 
         if (fetchErr) throw fetchErr
 
-        const existingMap = new Map(existingInsts.map(i => [i.installment_no, i.id]))
+        const existingMap = new Map(existingInsts.map((i) => [i.installment_no, i.id]))
         const updatePromises = []
         const insertData = []
         const deleteIds = []
@@ -330,8 +333,13 @@ export function MemberForm({ initialData }: { initialData?: any }) {
 
       // Sync family members for both new and existing members
       if (initialData?.id) {
-        // Delete existing active family members
-        await supabase.from('member_family').delete().eq('member_id', initialData.id)
+        const { error: familySoftDeleteError } = await supabase
+          .from('member_family')
+          .update({ is_deleted: true })
+          .eq('member_id', initialData.id)
+          .eq('is_deleted', false)
+
+        if (familySoftDeleteError) throw familySoftDeleteError
       }
 
       if (data.family_members && data.family_members.length > 0) {
@@ -350,9 +358,9 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       toast.success(initialData?.id ? 'Member updated successfully' : 'Member created successfully')
       router.push('/members')
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      toast.error(err.message || 'An error occurred while saving the member')
+      toast.error(err instanceof Error ? err.message : 'An error occurred while saving the member')
     } finally {
       setIsSubmitting(false)
     }
@@ -373,6 +381,7 @@ export function MemberForm({ initialData }: { initialData?: any }) {
       <FinancialDetailsSection
         register={register}
         errors={errors}
+        onCalculationFieldFocus={setCalculationDriver}
       />
 
       <GuarantorDetailsSection register={register} errors={errors} />

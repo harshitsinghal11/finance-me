@@ -1,19 +1,13 @@
 'use client'
 
-import { useTheme } from 'next-themes'
-import { Moon, Sun, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { createClient } from '@/src/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { Button } from '@/src/components/ui/Button'
 
 export function Navbar() {
-  const { theme, setTheme } = useTheme()
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
 
   const handleLogout = async () => {
     const supabase = createClient()

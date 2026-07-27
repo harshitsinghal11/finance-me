@@ -1,5 +1,3 @@
-import { Search, Filter } from 'lucide-react'
-
 export function DashboardSkeleton() {
   return (
     <div className="p-8 max-w-7xl mx-auto animate-pulse">

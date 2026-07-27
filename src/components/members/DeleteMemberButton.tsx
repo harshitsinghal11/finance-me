@@ -28,9 +28,9 @@ export function DeleteMemberButton({ id }: { id: string }) {
 
       toast.success('Member deleted successfully')
       router.push('/members')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || 'Failed to delete member')
+      toast.error(error instanceof Error ? error.message : 'Failed to delete member')
       setIsDeleting(false)
     }
   }

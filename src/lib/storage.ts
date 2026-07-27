@@ -12,7 +12,7 @@ export async function uploadFinanceDocument(
   const fileExt = file.name.split('.').pop()
   const fileName = `${memberId}/${documentType}_${uuidv4()}.${fileExt}`
   
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('finance_documents')
     .upload(fileName, file, {
       cacheControl: '3600',

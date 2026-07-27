@@ -1,6 +1,6 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form'
 import { MemberFormValues } from '../schema'
-import { InputField, SelectField } from './FieldComponents'
+import { InputField } from './FieldComponents'
 
 interface PersonalInfoSectionProps {
   register: UseFormRegister<MemberFormValues>

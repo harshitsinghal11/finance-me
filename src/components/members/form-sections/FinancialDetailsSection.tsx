@@ -5,9 +5,10 @@ import { InputField } from './FieldComponents'
 interface FinancialDetailsSectionProps {
   register: UseFormRegister<MemberFormValues>
   errors: FieldErrors<MemberFormValues>
+  onCalculationFieldFocus: (field: 'installment_amount' | 'total_installments' | 'tenure') => void
 }
 
-export function FinancialDetailsSection({ register, errors }: FinancialDetailsSectionProps) {
+export function FinancialDetailsSection({ register, errors, onCalculationFieldFocus }: FinancialDetailsSectionProps) {
   return (
     <div className="bg-surface border border-border rounded-lg p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -34,7 +35,7 @@ export function FinancialDetailsSection({ register, errors }: FinancialDetailsSe
         <InputField label="Benefit Amount" name="benefit_amount" type="number" register={register} errors={errors} />
 
         <div>
-          <InputField label="Installment Amount *" name="installment_amount" type="number" register={register} errors={errors} />
+          <InputField label="Installment Amount *" name="installment_amount" type="number" register={register} errors={errors} onFocus={() => onCalculationFieldFocus('installment_amount')} />
         </div>
 
         <div>
@@ -49,10 +50,10 @@ export function FinancialDetailsSection({ register, errors }: FinancialDetailsSe
           </select>
         </div>
 
-        <InputField label="Tenure (Years)" name="tenure_years" type="number" register={register} errors={errors} />
-        <InputField label="Tenure (Months)" name="tenure_months" type="number" register={register} errors={errors} />
+        <InputField label="Tenure (Years)" name="tenure_years" type="number" register={register} errors={errors} onFocus={() => onCalculationFieldFocus('tenure')} />
+        <InputField label="Tenure (Months)" name="tenure_months" type="number" register={register} errors={errors} onFocus={() => onCalculationFieldFocus('tenure')} />
         <div>
-          <InputField label="Total Installments *" name="total_installments" type="number" register={register} errors={errors} />
+          <InputField label="Total Installments *" name="total_installments" type="number" register={register} errors={errors} onFocus={() => onCalculationFieldFocus('total_installments')} />
         </div>
 
         <InputField label="Installment Start Date *" name="installment_start_date" type="date" register={register} errors={errors} />

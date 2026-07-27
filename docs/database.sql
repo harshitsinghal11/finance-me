@@ -210,7 +210,7 @@ CREATE POLICY "Users can delete installments of their members."
 -- 6. Storage Buckets (Optional Setup via SQL)
 -- ==========================================
 -- Insert the bucket record (if using Supabase storage via SQL)
-INSERT INTO storage.buckets (id, name, public) VALUES ('finance_documents', 'finance_documents', false) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('finance_documents', 'finance_documents', true) ON CONFLICT DO NOTHING;
 
 -- Storage Policy: Users can only upload and view their own files (Assuming user auth)
 CREATE POLICY "Authenticated users can upload files" 

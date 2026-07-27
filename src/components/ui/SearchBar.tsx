@@ -88,10 +88,10 @@ export function SearchBar({ placeholder = "Search members by name or mobile..." 
                     <button
                       key={sort.value}
                       onClick={() => updateParams('sort', sort.value)}
-                      className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-text hover:bg-background rounded-md"
+                      className="w-full flex items-start justify-between gap-2 px-2 py-1.5 text-left text-sm text-text hover:bg-background rounded-md"
                     >
-                      {sort.label}
-                      {currentSort === sort.value && <Check className="h-4 w-4 text-brand" />}
+                      <span className="flex-1">{sort.label}</span>
+                      {currentSort === sort.value && <Check className="h-4 w-4 shrink-0 mt-0.5 text-brand" />}
                     </button>
                   ))}
                 </div>

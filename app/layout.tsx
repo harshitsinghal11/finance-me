@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Quicksand } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import "./globals.css";
 
 const quicksand = Quicksand({
@@ -27,7 +27,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${quicksand.variable} antialiased`}
     >
-      <body>
+      <body className="font-quicksand">
         <main>
           {children}
         </main>

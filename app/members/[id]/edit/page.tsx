@@ -1,10 +1,15 @@
 import { createClient } from '@/src/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { MemberForm } from '@/src/components/members/MemberForm'
 
 export default async function EditMemberPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/')
+  }
 
   const { data: member } = await supabase
     .from('members')
@@ -13,6 +18,7 @@ export default async function EditMemberPage({ params }: { params: Promise<{ id:
       member_family (*)
     `)
     .eq('id', resolvedParams.id)
+    .eq('profile_id', user.id)
     .single()
 
   if (!member || member.is_deleted) {

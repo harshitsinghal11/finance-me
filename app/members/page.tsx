@@ -1,6 +1,7 @@
 import { createClient } from '@/src/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Eye, UsersRound, House } from 'lucide-react'
+import { Plus, House } from 'lucide-react'
+import { redirect } from 'next/navigation'
 import { SearchBar } from '@/src/components/ui/SearchBar'
 import { MembersTable } from '@/src/components/members/MembersTable'
 import { AnimatedPage } from '@/src/components/ui/AnimatedPage'
@@ -24,10 +25,16 @@ export default async function MembersPage(props: {
   const to = from + itemsPerPage - 1;
 
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/')
+  }
 
   let supaQuery = supabase
     .from('members')
     .select('*', { count: 'exact' })
+    .eq('profile_id', user.id)
     .eq('is_deleted', false)
     .range(from, to)
 

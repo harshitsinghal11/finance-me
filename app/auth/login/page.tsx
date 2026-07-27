@@ -2,7 +2,6 @@
 
 import { createClient } from '@/src/lib/supabase/client'
 import { useState } from 'react'
-import { Button } from '@/src/components/ui/Button'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)

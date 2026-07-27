@@ -6,14 +6,23 @@ import { format } from 'date-fns'
 import Pagination from '@/src/components/ui/Pagination'
 
 interface MembersTableProps {
-  members: any[]
+  members: Array<{
+    id: string
+    member_name: string
+    mobile_no: string
+    loan_amount: number | string
+    loan_date: string
+    installment_amount: number | string
+    total_installments: number
+    status: 'Active' | 'Closed' | 'Defaulted'
+  }>
   totalPages: number
   currentPage: number
 }
 
 export function MembersTable({ members, totalPages, currentPage }: MembersTableProps) {
   return (
-    <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-background/50 text-text-secondary">
@@ -25,12 +34,12 @@ export function MembersTable({ members, totalPages, currentPage }: MembersTableP
               <th className="px-6 py-4 font-medium">Installment Amount</th>
               <th className="px-6 py-4 font-medium">Total Installments</th>
               <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
+              <th className="px-6 py-4 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {members?.map((member) => (
-              <tr key={member.id} className="hover:bg-background/50 transition-colors">
+              <tr key={member.id} className="transition-colors hover:bg-background/50">
                 <td className="px-6 py-4 font-medium text-text">{member.member_name}</td>
                 <td className="px-6 py-4 text-text-secondary">{member.mobile_no}</td>
                 <td className="px-6 py-4 text-text">₹{member.loan_amount}</td>
@@ -39,16 +48,15 @@ export function MembersTable({ members, totalPages, currentPage }: MembersTableP
                 <td className="px-6 py-4 text-text">{member.total_installments}</td>
                 <td className="px-6 py-4">
                   <span
-                    className={`inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border
-                      ${member.status === "Active"
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : member.status === "Closed"
-                        ? "bg-slate-100 text-slate-700 border-slate-200"
-                        : member.status === "Defaulted"
-                        ? "bg-red-50 text-red-700 border-red-200"
-                        : "bg-gray-100 text-gray-700 border-gray-200"
-                      }
-                    `}
+                    className={`inline-flex min-w-[90px] items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide ${
+                      member.status === 'Active'
+                        ? 'border-green-200 bg-green-50 text-green-700'
+                        : member.status === 'Closed'
+                          ? 'border-slate-200 bg-slate-100 text-slate-700'
+                          : member.status === 'Defaulted'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-gray-200 bg-gray-100 text-gray-700'
+                    }`}
                   >
                     {member.status}
                   </span>
@@ -56,7 +64,7 @@ export function MembersTable({ members, totalPages, currentPage }: MembersTableP
                 <td className="px-6 py-4 text-right">
                   <Link
                     href={`/members/${member.id}`}
-                    className="inline-flex items-center gap-1 text-brand hover:text-brand/80 font-medium"
+                    className="inline-flex items-center gap-1 font-medium text-brand hover:text-brand/80"
                   >
                     <Eye className="h-4 w-4" /> View
                   </Link>
@@ -72,7 +80,7 @@ export function MembersTable({ members, totalPages, currentPage }: MembersTableP
             )}
           </tbody>
         </table>
-        
+
         {totalPages > 1 && (
           <Pagination totalPages={totalPages} currentPage={currentPage} />
         )}

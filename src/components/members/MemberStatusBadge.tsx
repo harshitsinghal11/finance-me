@@ -5,7 +5,7 @@ import { createClient } from '@/src/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, XCircle, AlertCircle, ChevronDown, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertCircle, ChevronDown, Loader2 } from 'lucide-react'
 
 type Status = 'Active' | 'Closed' | 'Defaulted'
 
@@ -32,9 +32,9 @@ export function MemberStatusBadge({ id, currentStatus }: { id: string, currentSt
       setStatus(newStatus)
       toast.success(`Member marked as ${newStatus}`)
       router.refresh()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || 'Failed to update status')
+      toast.error(error instanceof Error ? error.message : 'Failed to update status')
     } finally {
       setIsUpdating(false)
     }
