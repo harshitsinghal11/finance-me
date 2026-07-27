@@ -28,7 +28,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
   const supabase = createClient()
   const router = useRouter()
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<z.input<typeof updateSchema>, any, UpdateFormValues>({
+  const { register, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm<z.input<typeof updateSchema>, any, UpdateFormValues>({
     resolver: zodResolver(updateSchema),
     defaultValues: {
       amount_paid: 0,
@@ -38,10 +38,6 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
       remarks: ''
     }
   })
-
-  // Watch for amount changes to auto-suggest status
-  const watchAmountPaid = watch('amount_paid')
-  const watchPenalty = watch('penalty_amount')
 
   const openEditModal = (inst: any) => {
     setEditingInst(inst)
@@ -57,8 +53,8 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
   // Auto-calculate status based on input
   const calculateStatus = () => {
     if (!editingInst) return
-    const expected = Number(editingInst.installment_amount) + Number(watchPenalty || 0)
-    const paid = Number(watchAmountPaid || 0)
+    const expected = Number(editingInst.installment_amount) + Number(getValues('penalty_amount') || 0)
+    const paid = Number(getValues('amount_paid') || 0)
 
     if (paid >= expected) {
       setValue('status', 'Paid')
@@ -76,7 +72,7 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
     const paid = Number(data.amount_paid || 0)
     const outstanding = expected - paid
 
-    if (data.status === 'Paid' && outstanding > 0) {
+    if (data.status === 'Paid' && outstanding > 0.01) {
       toast.error('Cannot mark as Paid. Outstanding amount must be 0.')
       return
     }
@@ -254,7 +250,16 @@ export function InstallmentTable({ memberId, initialInstallments }: { memberId: 
                 <div>
                   <label className="block text-sm font-medium text-text mb-1">Status *</label>
                   <select
-                    {...register('status')}
+                    {...register('status', {
+                      onChange: (e) => {
+                        if (e.target.value === 'Paid') {
+                          const expected = Number(editingInst.installment_amount) + Number(getValues('penalty_amount') || 0);
+                          setValue('amount_paid', expected);
+                        } else if (e.target.value === 'Pending') {
+                          setValue('amount_paid', 0);
+                        }
+                      }
+                    })}
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   >
                     <option value="Pending">Pending</option>

@@ -8,6 +8,7 @@ const quicksand = Quicksand({
 });
 
 import { Toaster } from "sonner";
+import { GlobalHelp } from "@/src/components/GlobalHelp";
 
 export const metadata: Metadata = {
   title: "Finance-Me",
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-text">
         {children}
         <Toaster position="bottom-right" richColors />
+        <GlobalHelp />
       </body>
     </html>
   );
