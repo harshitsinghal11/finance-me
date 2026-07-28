@@ -1,4 +1,4 @@
-import { createClient } from '@/src/lib/supabase/server'
+import { createClient, getUser } from '@/src/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -34,7 +34,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : ''
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getUser()
 
   if (!user) {
     redirect('/')

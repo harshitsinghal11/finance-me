@@ -18,7 +18,7 @@ export default function SetupProfilePage() {
       }
     }
     fetchUser()
-  }, [supabase])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,22 +56,22 @@ export default function SetupProfilePage() {
           </div>
           <h1 className="text-2xl font-bold text-text mb-2 tracking-tight">Complete Your Profile</h1>
           <p className="text-sm font-medium text-text-secondary">
-            Please confirm your details to continue to the dashboard
+            Confirm your name to continue
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-text mb-2">Full Name</label>
-            <input 
-              type="text" 
-              required 
+            <input
+              type="text"
+              required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="w-full rounded-xl border border-border bg-background px-4 py-3 text-text focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors font-medium shadow-sm"
             />
           </div>
-          
+
           <button
             type="submit"
             disabled={isLoading || !fullName}

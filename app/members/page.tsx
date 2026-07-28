@@ -1,4 +1,4 @@
-import { createClient } from '@/src/lib/supabase/server'
+import { createClient, getUser } from '@/src/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, House } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -25,7 +25,7 @@ export default async function MembersPage(props: {
   const to = from + itemsPerPage - 1;
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getUser()
 
   if (!user) {
     redirect('/')

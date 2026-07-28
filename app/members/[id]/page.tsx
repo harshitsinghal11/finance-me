@@ -1,4 +1,4 @@
-import { createClient } from '@/src/lib/supabase/server'
+import { createClient, getUser } from '@/src/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, User, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
@@ -14,7 +14,7 @@ import { calculateTotalPaid, calculateTotalPenalties, calculateOutstandingBalanc
 export default async function MemberDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getUser()
 
   if (!user) {
     redirect('/')

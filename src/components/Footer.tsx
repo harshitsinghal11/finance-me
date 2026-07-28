@@ -44,8 +44,9 @@ export function Footer() {
                 alt="Finance Me Logo"
                 width={32}
                 height={32}
-                className="rounded-md shrink-0"
+                className="w-8 h-8 rounded-md shrink-0"
               />
+
               <span className="text-xl font-bold">Finance Me</span>
             </div>
             <p className="text-sm opacity-80 max-w-xs">

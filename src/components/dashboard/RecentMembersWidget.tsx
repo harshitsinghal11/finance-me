@@ -1,11 +1,11 @@
-import { createClient } from '@/src/lib/supabase/server'
+import { createClient, getUser } from '@/src/lib/supabase/server'
 import Link from 'next/link'
 import { Clock, Clock4 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 export async function RecentMembersWidget() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getUser()
 
   if (!user) return null
 

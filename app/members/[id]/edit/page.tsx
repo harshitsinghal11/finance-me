@@ -1,11 +1,11 @@
-import { createClient } from '@/src/lib/supabase/server'
+import { createClient, getUser } from '@/src/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { MemberForm } from '@/src/components/members/MemberForm'
 
 export default async function EditMemberPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getUser()
 
   if (!user) {
     redirect('/')
