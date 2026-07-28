@@ -1,6 +1,6 @@
 import { createClient } from '@/src/lib/supabase/server'
 import Link from 'next/link'
-import { Clock } from 'lucide-react'
+import { Clock, Clock4 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 export async function RecentMembersWidget() {
@@ -27,8 +27,8 @@ export async function RecentMembersWidget() {
           </h3>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center p-6">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-            <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <div className="mb-2">
+            <Clock4 size={30} />
           </div>
           <h3 className="text-lg font-medium text-text">No Members Yet</h3>
           <p className="mt-1 text-sm text-text-secondary">Add your first member to see them here.</p>
@@ -61,15 +61,14 @@ export async function RecentMembersWidget() {
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="font-semibold text-text">₹{Number(member.loan_amount).toLocaleString('en-IN')}</span>
-                  <span className={`mt-0.5 rounded-full border px-2 py-0.5 text-xs font-medium ${
-                    member.status === 'Active'
-                      ? 'border-green-200 bg-green-50 text-green-700'
-                      : member.status === 'Closed'
-                        ? 'border-slate-200 bg-slate-100 text-slate-700'
-                        : member.status === 'Defaulted'
-                          ? 'border-red-200 bg-red-50 text-red-700'
-                          : 'border-gray-200 bg-gray-100 text-gray-700'
-                  }`}>
+                  <span className={`mt-0.5 rounded-full border px-2 py-0.5 text-xs font-medium ${member.status === 'Active'
+                    ? 'border-green-200 bg-green-50 text-green-700'
+                    : member.status === 'Closed'
+                      ? 'border-slate-200 bg-slate-100 text-slate-700'
+                      : member.status === 'Defaulted'
+                        ? 'border-red-200 bg-red-50 text-red-700'
+                        : 'border-gray-200 bg-gray-100 text-gray-700'
+                    }`}>
                     {member.status}
                   </span>
                 </div>

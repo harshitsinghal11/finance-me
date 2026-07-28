@@ -1,6 +1,6 @@
 import { createClient } from '@/src/lib/supabase/server'
 import Link from 'next/link'
-import { AlertCircle, Clock } from 'lucide-react'
+import { AlertCircle, CircleCheckBig, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DueInstallmentMember {
@@ -54,10 +54,8 @@ export async function DueTodayWidget() {
           </h3>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center p-6">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+          <div className="mb-2">
+            <CircleCheckBig size={30} />
           </div>
           <h3 className="text-lg font-bold text-emerald-900">All Caught Up!</h3>
           <p className="mt-1 text-sm text-text-secondary">No collections due today.</p>

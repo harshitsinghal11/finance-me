@@ -128,7 +128,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-2 mt-8 space-y-4 md:space-y-0">
+        <div className="flex flex-col md:flex-row justify-between items-center pt-4 mt-8 space-y-4 md:space-y-0 border-t border-white/40">
           <div className="flex items-center space-x-2 text-sm">
             <span>Made with Love by</span>
             <Heart size={16} className="text-red-500 fill-current" />

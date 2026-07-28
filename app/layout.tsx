@@ -31,18 +31,18 @@ export default function RootLayout({
         <NextTopLoader
           color="#0f52ba"
           initialPosition={0.08}
-          crawlSpeed={200}
-          height={3}
+          crawlSpeed={50}
+          height={2}
           crawl={true}
           showSpinner={false}
           easing="ease"
-          speed={200}
+          speed={50}
           shadow="0 0 10px #0f52ba,0 0 5px #0f52ba"
         />
         <main>
           {children}
         </main>
-        <Toaster position="bottom-right" richColors />
+        <Toaster position="top-right" richColors />
         <GlobalHelp />
       </body>
     </html>
